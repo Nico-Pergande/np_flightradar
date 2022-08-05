@@ -1,14 +1,8 @@
-fx_version 'adamant'
-lua54 'yes'
+fx_version 'cerulean'
 game 'gta5'
-
+lua54 'yes'
 name 'np_flightradar'
+author 'Nico-Pergande'
 
 client_script 'clmain.lua'
-
 server_script 'svmain.lua'
-
-escrow_ignore {
-    'clmain.lua',
-    'svmain.lua'
-}
