@@ -6,7 +6,9 @@
 --   job = 'police', grade = 0, onduty = bool,
 --   hasItem = bool,            holds Config.Access.item
 --   station = <Config.Stations entry> | nil   (the station the player stands at)
---   isAdmin = bool, discordOk = bool,
+--   isAdmin = bool,            np_admin node np_flightradar.admin
+--   groundGrant = bool,        np_admin node np_flightradar.ground (ground radar without a job)
+--   discordOk = bool,
 --   licensed = true | false | nil (nil = unknown / np_identification absent)
 -- }
 -- veto = function(mode) -> bool|nil  (false denies; Config.CanUse + RegisterAccessCheck)
@@ -62,13 +64,15 @@ function Access.allows(mode, info, cfg)
     if id.requireLicenseForAirRadar and info.licensed == false then return false end
     return true
   elseif mode == 'ground' then
-    return Access.jobAllowed(a.jobs, info, duty) or info.discordOk == true
+    return Access.jobAllowed(a.jobs, info, duty) or info.discordOk == true or info.groundGrant == true
   elseif mode == 'item' then
     return a.item ~= nil and a.item ~= false and info.hasItem == true
   elseif mode == 'station' then
     local st = info.station
     if type(st) ~= 'table' then return false end
-    if st.jobs == nil then return Access.jobAllowed(a.jobs, info, duty) or info.discordOk == true end
+    if st.jobs == nil then
+      return Access.jobAllowed(a.jobs, info, duty) or info.discordOk == true or info.groundGrant == true
+    end
     return Access.jobAllowed(st.jobs, info, duty)
   elseif mode == 'phone' then
     local p = cfg.Phone or {}

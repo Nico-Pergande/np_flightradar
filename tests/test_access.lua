@@ -95,6 +95,17 @@ do
   ok(Access.best({ isAdmin = true, job = 'police', onduty = true }, C).mode == 'admin', 'admin is best')
 end
 
+-- ===== np_admin node np_flightradar.ground ===========================================================
+do
+  local r = Access.resolve({ groundGrant = true }, C, 'ground')
+  ok(r and r.mode == 'ground' and r.range == 12000 and not r.primary, 'ground node grants the ground radar')
+  ok(Access.best({ groundGrant = true }, C).mode == 'ground', 'ground node: best = ground')
+  ok(Access.resolve({ groundGrant = true }, C, 'admin') == nil, 'ground node is not admin')
+  local open = { label = 'Open', coords = { x = 0, y = 0, z = 0 }, radius = 10 }
+  ok(Access.resolve({ groundGrant = true, station = open }, C, 'station') ~= nil, 'ground node: station without own jobs')
+  ok(Access.resolve({ groundGrant = true, station = tower }, C, 'station') == nil, 'ground node: station with own jobs still needs one')
+end
+
 -- ===== best / modes / veto / junk ====================================================================
 do
   ok(Access.best({ inAircraft = true }, C).mode == 'air', 'best: air')

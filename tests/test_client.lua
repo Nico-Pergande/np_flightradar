@@ -70,7 +70,19 @@ local function blipCount() local n = 0 for _ in pairs(C.blips) do n = n + 1 end 
 local function fromServer(name, ...) H.fromClient(name, '', ...) end
 
 -- ===== boot ==========================================================================================
-for _, f in ipairs({ 'config.lua', 'shared/locale.lua', 'locales/en.lua', 'locales/de.lua', 'shared/radarmath.lua',
+GlobalState = {}
+-- minimal json.encode (the np_admin lib compares values with it); keys sorted for a stable result
+local function enc(v)
+  if type(v) ~= 'table' then return tostring(v) end
+  local keys = {}
+  for k in pairs(v) do keys[#keys + 1] = tostring(k) end
+  table.sort(keys)
+  local out = {}
+  for _, k in ipairs(keys) do out[#out + 1] = k .. '=' .. enc(v[k] ~= nil and v[k] or v[tonumber(k)]) end
+  return '{' .. table.concat(out, ',') .. '}'
+end
+json = { encode = enc }
+for _, f in ipairs({ 'config.lua', 'bridge/np_admin.lua', 'shared/np_admin_settings.lua', 'shared/locale.lua', 'locales/en.lua', 'locales/de.lua', 'shared/radarmath.lua',
   'shared/access.lua', 'integrations/registry.lua', 'bridge/client.lua', 'integrations/client.lua', 'client/blips.lua',
   'client/radar.lua', 'client/transponder.lua', 'client/proximity.lua', 'client/nui.lua', 'client/phone.lua', 'client/main.lua' }) do
   H.load(f)
@@ -256,6 +268,19 @@ do
   TriggerEvent('np_phone:appState', 'flightradar', 'close')
   C.veh, C.class, C.seat[-1] = 0, 0, nil
   H.advance(1500)
+end
+
+-- ===== np_admin shared settings (GlobalState npcfg:np_flightradar) ==================================
+do
+  local handler = C.handlers['npcfg:np_flightradar']
+  ok(type(handler) == 'function', 'np_admin settings bag handler registered')
+  NpFR.Blips.list[-1] = { style = 'x' }
+  handler('global', 'npcfg:np_flightradar', { ['Proximity.enabled'] = false, ['Blips.heli.scale'] = 1.2, ['Ranges.air'] = 1 })
+  ok(Config.Proximity.enabled == false and Config.Blips.heli.scale == 1.2, 'shared settings applied on the client')
+  ok(NpFR.Blips.list[-1].style == nil, 'blip change forces a restyle')
+  handler('global', 'npcfg:np_flightradar', {})
+  ok(Config.Proximity.enabled == true and Config.Blips.heli.scale == 0.8, 'cleared bag restores the defaults')
+  NpFR.Blips.list[-1] = nil
 end
 
 -- ===== resource stop =================================================================================

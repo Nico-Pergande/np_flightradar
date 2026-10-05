@@ -19,12 +19,16 @@ repository 'https://github.com/Nico-Pergande/np_flightradar'
     np_menu            radial entries: flight radar + transponder submenu
     np_manufacturing   vehicle callsigns (state bag vehicleCallsign)
     np_helicam         camera-active flag (state bag helicam_cam)
+    np_admin           permissions (np_flightradar.admin / .ground), settings, logs and staff tools
+                       (vendored lib bridge/np_admin.lua, never a hard dependency)
 ]]
 
 dependency '/onesync'
 
 shared_scripts {
   'config.lua',
+  'bridge/np_admin.lua',          -- np_admin integration lib (optional: works without np_admin)
+  'shared/np_admin_settings.lua', -- settings editable in np_admin
   'shared/locale.lua',
   'locales/*.lua',
   'shared/radarmath.lua',
@@ -41,6 +45,7 @@ server_scripts {
   'server/broadcast.lua',
   'server/exports.lua',
   'server/main.lua',
+  'server/np_admin.lua',
 }
 
 client_scripts {
