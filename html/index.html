@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<!-- No backdrop blur in FiveM (over the game it renders as a black box). Set before first paint;
+     vendor/nimbus/components.css holds the html.nb-fivem guard. -->
+<script>if (typeof GetParentResourceName === 'function') document.documentElement.classList.add('nb-fivem');</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>np_flightradar</title>
+<!-- Everything is vendored: FiveM NUI must work without network access. -->
+<link rel="stylesheet" href="fonts/quicksand/quicksand.css">
+<link rel="stylesheet" href="fonts/fontawesome/css/fontawesome.min.css">
+<link rel="stylesheet" href="fonts/fontawesome/css/solid.min.css">
+<!-- Nimbus UI: tokens -> components -> phone-kit -> theme -->
+<link rel="stylesheet" href="vendor/nimbus/tokens.css">
+<link rel="stylesheet" href="vendor/nimbus/components.css">
+<link rel="stylesheet" href="vendor/nimbus/phone-kit.css">
+<link rel="stylesheet" href="vendor/nimbus/theme.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="nb-ui">
+
+<aside class="fr-panel nb-glass" id="panel" hidden aria-label="Flight radar">
+
+  <header class="fr-head">
+    <span class="nb-tile nb-tile--sm nb-tile--blue"><i class="fa-solid fa-satellite-dish"></i></span>
+    <div class="fr-head__text">
+      <h1 id="title">Flight radar</h1>
+      <div class="fr-head__sub" id="subtitle"></div>
+    </div>
+    <span class="fr-mode" id="modeChip"><span class="nb-tile nb-tile--xs" id="modeTile"><i class="fa-solid fa-plane-up" id="modeIcon"></i></span><span id="modeLabel">Onboard</span></span>
+    <button class="fr-icon" id="pinBtn" type="button" title="Pin"><i class="fa-solid fa-thumbtack"></i></button>
+    <button class="fr-icon" id="closeBtn" type="button" title="Close"><i class="fa-solid fa-xmark"></i></button>
+  </header>
+
+  <div class="fr-scope" id="scopeWrap">
+    <canvas id="scope" aria-label="Radar scope"></canvas>
+    <span class="fr-scope__tag fr-scope__tag--tl" id="scopeRange"></span>
+    <span class="fr-scope__tag fr-scope__tag--tr" id="scopeOrient"></span>
+    <span class="fr-scope__tag fr-scope__tag--bl" id="scopeSelf"></span>
+    <div class="fr-alert" id="alert" hidden role="alert">
+      <span class="nb-tile nb-tile--sm" id="alertTile"><i class="fa-solid fa-triangle-exclamation"></i></span>
+      <div class="fr-alert__body"><b id="alertTitle"></b><span id="alertText"></span></div>
+    </div>
+  </div>
+
+  <div class="fr-controls" id="controls">
+    <div class="nb-segmented fr-ranges" id="ranges" role="group" aria-label="Range"></div>
+    <div class="fr-filters" role="group" aria-label="Filters">
+      <button class="fr-toggle is-on" id="fHeli" type="button"><i class="fa-solid fa-helicopter"></i></button>
+      <button class="fr-toggle is-on" id="fPlane" type="button"><i class="fa-solid fa-plane"></i></button>
+      <button class="fr-toggle" id="fEmerg" type="button"><i class="fa-solid fa-triangle-exclamation"></i></button>
+    </div>
+  </div>
+
+  <section class="fr-card fr-xpdr" id="xpdr" hidden>
+    <div class="fr-xpdr__head">
+      <span class="nb-tile nb-tile--sm" id="xpdrTile"><i class="fa-solid fa-tower-broadcast"></i></span>
+      <div class="fr-xpdr__text"><b id="xpdrTitle">Transponder</b><span id="xpdrState"></span></div>
+      <button class="nb-switch" id="xpdrSwitch" type="button" role="switch" aria-checked="false"></button>
+    </div>
+    <div class="fr-xpdr__fields">
+      <label class="fr-field fr-field--sq"><span id="sqLabel">Squawk</span>
+        <input id="sqInput" maxlength="4" inputmode="numeric" autocomplete="off" spellcheck="false"></label>
+      <label class="fr-field fr-field--cs"><span id="csLabel">Callsign</span>
+        <input id="csInput" maxlength="8" autocomplete="off" spellcheck="false"></label>
+    </div>
+    <div class="fr-quick" id="quick">
+      <button type="button" data-sq="7000">7000</button>
+      <button type="button" data-sq="7500" class="is-emerg">7500</button>
+      <button type="button" data-sq="7600" class="is-emerg">7600</button>
+      <button type="button" data-sq="7700" class="is-emerg">7700</button>
+    </div>
+  </section>
+
+  <div class="fr-listhead"><span id="listTitle">Contacts</span><span class="fr-count" id="count">0</span></div>
+  <div class="fr-list" id="list" role="list"></div>
+  <div class="fr-empty" id="empty" hidden>
+    <span class="nb-tile"><i class="fa-solid fa-cloud"></i></span>
+    <b id="emptyText">No aircraft in range</b>
+  </div>
+
+  <div class="fr-hint" id="hint" hidden><span class="nb-key" id="hintKey">F6</span><span id="hintText">Interact</span></div>
+</aside>
+
+<script src="radar.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

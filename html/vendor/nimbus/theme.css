@@ -1,0 +1,42 @@
+/* ==========================================================================
+   Nimbus UI · Server theming
+   One input colour (--nb-brand, set via NimbusTheme.apply) + a strength level.
+   Semantic colours NEVER change: health stays red, hunger orange, police blue,
+   errors red, success green. The brand replaces only the *neutral* layer.
+
+   data-nb-strength:
+     accent  → bars, timers, progress, speed arc, route, selection, compass
+     tiles   → accent + neutral icon tiles become brand tiles
+     glass   → tiles + glass surfaces pick up a hint of the brand hue
+   Load after components.css. Requires the vars written by nimbus-theme.js.
+   ========================================================================== */
+
+.nb-ui[data-nb-brand] {
+  --nb-neutral-accent: var(--nb-brand-accent);
+  --nb-ring-selected: 0 0 0 2px var(--nb-brand-accent), 0 0 14px var(--nb-brand-glow), 0 6px 14px rgba(0,0,0,.40);
+  --nb-speedo-stroke: var(--nb-brand-accent);
+  --nb-route-color: var(--nb-brand-accent);
+  --nb-waypoint-color: var(--nb-brand-mid);
+}
+.nb-ui[data-nb-brand] .nb-progress:not([class*="nb-progress--"]) {
+  --nb-accent: linear-gradient(90deg, var(--nb-brand-mid), var(--nb-brand-accent));
+}
+.nb-ui[data-nb-brand] .nb-compass > b,
+.nb-ui[data-nb-brand] .nb-speedo__unit { color: var(--nb-brand-accent); }
+.nb-ui[data-nb-brand] .nb-voice__range > i.is-on { background: var(--nb-brand-accent); }
+/* "brand" tint is always available, e.g. for the server-logo tile or announcements */
+.nb-tile--brand  { --nb-tile-bg: var(--nb-grad-brand, var(--nb-grad-neutral)); }
+.nb-level--brand { --nb-fill: var(--nb-fill-brand, var(--nb-fill-neutral)); }
+.nb-accent--brand { --nb-accent: var(--nb-brand-accent, var(--nb-neutral-accent)); }
+
+/* strength: tiles */
+.nb-ui[data-nb-strength="tiles"],
+.nb-ui[data-nb-strength="glass"] {
+  --nb-grad-neutral: var(--nb-grad-brand);
+  --nb-fill-neutral: var(--nb-fill-brand);
+}
+/* strength: glass */
+.nb-ui[data-nb-strength="glass"] {
+  --nb-glass: linear-gradient(180deg, var(--nb-brand-glass-top), var(--nb-brand-glass-bot));
+  --nb-glass-border-color: var(--nb-brand-glass-edge) rgba(255,255,255,.07) rgba(255,255,255,.02);
+}

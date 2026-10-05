@@ -1,0 +1,4 @@
+/* Quicksand 500/600/700, latin subset (from @fontsource/quicksand, SIL OFL 1.1, see LICENSE) */
+@font-face { font-family: 'Quicksand'; font-style: normal; font-display: block; font-weight: 500; src: url(quicksand-latin-500-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Quicksand'; font-style: normal; font-display: block; font-weight: 600; src: url(quicksand-latin-600-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Quicksand'; font-style: normal; font-display: block; font-weight: 700; src: url(quicksand-latin-700-normal.woff2) format('woff2'); }

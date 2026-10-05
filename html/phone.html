@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<script>if (typeof GetParentResourceName === 'function') document.documentElement.classList.add('nb-fivem');</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flightradar</title>
+<link rel="stylesheet" href="fonts/quicksand/quicksand.css">
+<link rel="stylesheet" href="fonts/fontawesome/css/fontawesome.min.css">
+<link rel="stylesheet" href="fonts/fontawesome/css/solid.min.css">
+<link rel="stylesheet" href="vendor/nimbus/tokens.css">
+<link rel="stylesheet" href="vendor/nimbus/components.css">
+<link rel="stylesheet" href="vendor/nimbus/phone-kit.css">
+<link rel="stylesheet" href="vendor/nimbus/theme.css">
+<style>
+  /* np_flightradar phone app — np_phone custom app (iframe) on the Nimbus phone kit.
+     The phone's status bar + home indicator float over the iframe: safe areas follow the SDK
+     variables --np-safe-top / --np-safe-bottom. */
+  html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: transparent; }
+  .ph-root, .ph-root *, .ph-root *::before, .ph-root *::after { background-origin: border-box !important; }
+  .ph-root { position: absolute; inset: 0; }
+  .ph-app {
+    --nb-status-h: calc(var(--np-safe-top, 52px) + 6px);
+    --nb-home-h: calc(var(--np-safe-bottom, 26px) + 10px);
+  }
+  .ph-app .nb-title { margin-bottom: 12px; }
+  .ph-live { display: inline-flex; align-items: center; gap: 6px; }
+  .ph-live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--nb-green-accent); }
+  .ph-live.is-stale::before { background: var(--nb-text-faint); }
+
+  .ph-scope {
+    position: relative; margin: 0 0 12px; padding: 8px; border-radius: var(--nb-radius-card);
+    background: var(--nb-app-card); border: 1px solid; border-color: var(--nb-app-card-border);
+  }
+  .ph-scope canvas { display: block; width: 100%; aspect-ratio: 1 / 1; }
+  .ph-scope__tag {
+    position: absolute; top: 8px; font-size: var(--nb-text-2xs); font-weight: var(--nb-weight-bold);
+    color: var(--nb-text-body); padding: 2px 7px; border-radius: 6px; background: rgba(0,0,0,.4);
+    font-variant-numeric: tabular-nums; pointer-events: none;
+  }
+  .ph-scope__tag:empty { display: none; }
+  .ph-scope__tag--l { left: 8px; } .ph-scope__tag--r { right: 8px; }
+
+  .ph-seg { margin-bottom: 14px; }
+  .ph-seg > button { font-weight: var(--nb-weight-bold); }
+  .ph-row { --nb-sep-left: 56px; }
+  .ph-row.is-selected { background: rgba(255,255,255,.07); }
+  .ph-row .nb-row__title { display: flex; align-items: center; gap: 6px; }
+  .ph-row .nb-row__title > span:first-child { overflow: hidden; text-overflow: ellipsis; }
+  .ph-meta { flex: none; display: flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums; }
+  .ph-meta b { font-size: var(--nb-text-base); font-weight: var(--nb-weight-bold); color: var(--nb-text); }
+  .ph-meta span { font-size: var(--nb-text-xs); color: var(--nb-text-muted); font-weight: var(--nb-weight-semibold); }
+  .ph-row .nb-row__sub { font-size: var(--nb-text-sm); }
+
+  .fr-sq { flex: none; padding: 1px 6px; border-radius: 6px; background: var(--nb-app-fill); font-size: var(--nb-text-2xs); font-weight: var(--nb-weight-bold); letter-spacing: .08em; }
+  .fr-sq:empty { display: none; }
+  .fr-sq.is-emerg { background: var(--nb-fill-red); }
+  .fr-badges { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+  .fr-badge { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 7px; border-radius: 6px;
+    font-size: var(--nb-text-2xs); font-weight: var(--nb-weight-bold); letter-spacing: .05em; text-transform: uppercase;
+    background: var(--nb-app-fill); color: var(--nb-text); white-space: nowrap; }
+  .fr-badge i { font-size: 9px; }
+  .fr-badge--red { background: var(--nb-fill-red); } .fr-badge--orange { background: var(--nb-fill-orange); }
+  .fr-badge--blue { background: var(--nb-fill-blue); } .fr-badge--aqua { background: var(--nb-fill-aqua); }
+  .fr-badge--rust { background: var(--nb-fill-rust); } .fr-badge--olive { background: var(--nb-fill-olive); }
+
+  /* detail sheet */
+  .ph-sheet .nb-sheet__head button { appearance: none; border: 0; background: none; font: inherit; color: var(--nb-app-accent); cursor: pointer; padding: 0; }
+  .ph-hero { display: flex; align-items: center; gap: 12px; margin: 4px 0 12px; }
+  .ph-hero__text { min-width: 0; flex: 1; }
+  .ph-hero__text b { display: block; font-size: 22px; font-weight: var(--nb-weight-bold); line-height: 1.15; }
+  .ph-hero__text span { font-size: var(--nb-text-md); color: var(--nb-text-muted); font-weight: var(--nb-weight-semibold); }
+  .ph-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .ph-fact { padding: 9px 12px; border-radius: var(--nb-radius-tile); background: var(--nb-app-card); border: 1px solid; border-color: var(--nb-app-card-border); }
+  .ph-fact span { display: block; font-size: var(--nb-text-2xs); font-weight: var(--nb-weight-bold); color: var(--nb-text-muted); letter-spacing: var(--nb-tracking-caps); text-transform: uppercase; }
+  .ph-fact b { display: block; margin-top: 2px; font-size: var(--nb-text-lg); font-weight: var(--nb-weight-bold); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ph-badges { margin-bottom: 14px; }
+  .ph-flash {
+    position: absolute; z-index: 250; left: 50%; top: calc(var(--np-safe-top, 52px) + 4px); translate: -50% 0;
+    display: inline-flex; align-items: center; gap: 8px; max-width: calc(100% - 40px);
+    padding: 9px 14px; border-radius: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    background: var(--nb-app-sheet); border: 1px solid; border-color: var(--nb-glass-border-color); box-shadow: 0 10px 30px rgba(0,0,0,.45);
+    font-size: var(--nb-text-md); font-weight: var(--nb-weight-semibold); color: var(--nb-text);
+  }
+  .ph-flash i { color: var(--nb-green-accent); }
+  html.nb-fivem .nb-sheet { background: #1c1c1e; }
+
+  /* dev frame (?dev=1 at top level, or &frame=1): the page draws the phone itself */
+  html.ph-framed, html.ph-framed body { background: #15181a; }
+  html.ph-framed.ph-embedded, html.ph-framed.ph-embedded body { background: transparent; }
+  .ph-stage { position: absolute; inset: 0; display: grid; place-items: center; }
+  .ph-stage .nb-phone { position: relative; }
+  .ph-stage .nb-phone__screen { clip-path: inset(0 round var(--nb-radius-screen)); }
+  .ph-status { position: absolute; top: 18px; left: 34px; right: 30px; z-index: 400; display: flex; justify-content: space-between; align-items: center; font-size: var(--nb-text-base); font-weight: var(--nb-weight-bold); pointer-events: none; }
+  .ph-status i { margin-left: 7px; font-size: 12px; }
+  .ph-homebar { position: absolute; bottom: 9px; left: 50%; transform: translateX(-50%); width: 130px; height: 5px; border-radius: 3px; background: var(--nb-text); z-index: 600; }
+</style>
+</head>
+<body class="nb-ui">
+<div class="ph-root" id="root">
+  <div class="nb-screen nb-accent--blue ph-app" id="app">
+    <div class="nb-screen__body" id="body">
+      <div class="nb-title">
+        <div><div class="nb-title__eyebrow"><span class="ph-live is-stale" id="live">Live</span></div><h1 id="title">Flightradar</h1></div>
+        <span class="nb-tile nb-tile--sm nb-tile--blue"><i class="fa-solid fa-plane-up"></i></span>
+      </div>
+      <div class="ph-scope">
+        <canvas id="scope"></canvas>
+        <span class="ph-scope__tag ph-scope__tag--l" id="scopeRange"></span>
+        <span class="ph-scope__tag ph-scope__tag--r" id="scopeOrient"></span>
+      </div>
+      <div class="nb-segmented ph-seg" id="filters" role="group">
+        <button class="is-on" data-f="all" type="button" id="fAll">All</button>
+        <button data-f="heli" type="button" id="fHeli"><i class="fa-solid fa-helicopter"></i></button>
+        <button data-f="plane" type="button" id="fPlane"><i class="fa-solid fa-plane"></i></button>
+        <button data-f="emerg" type="button" id="fEmerg"><i class="fa-solid fa-triangle-exclamation"></i></button>
+      </div>
+      <section class="nb-section">
+        <div class="nb-section__title" id="listTitle">Contacts</div>
+        <div class="nb-list" id="list"></div>
+      </section>
+      <div class="nb-empty" id="empty" hidden>
+        <span class="nb-tile nb-tile--blue"><i class="fa-solid fa-cloud"></i></span>
+        <b id="emptyText">No aircraft in range</b>
+      </div>
+    </div>
+
+    <div class="nb-scrim" id="scrim" hidden></div>
+    <div class="nb-sheet ph-sheet" id="sheet" hidden role="dialog" aria-modal="true">
+      <div class="nb-sheet__head"><button type="button" id="sheetClose">Close</button><span class="nb-sheet__title" id="sheetTitle"></span><span></span></div>
+      <div class="nb-sheet__body">
+        <div class="ph-hero">
+          <span class="nb-tile nb-tile--lg" id="dTile"><i class="fa-solid fa-plane" id="dGlyph"></i></span>
+          <div class="ph-hero__text"><b id="dCs"></b><span id="dModel"></span></div>
+          <span class="fr-sq" id="dSq"></span>
+        </div>
+        <div class="fr-badges ph-badges" id="dBadges"></div>
+        <div class="ph-facts">
+          <div class="ph-fact"><span id="lAlt">Altitude</span><b id="dAlt"></b></div>
+          <div class="ph-fact"><span id="lSpd">Speed</span><b id="dSpd"></b></div>
+          <div class="ph-fact"><span id="lVs">Vertical speed</span><b id="dVs"></b></div>
+          <div class="ph-fact"><span id="lHdg">Heading</span><b id="dHdg"></b></div>
+          <div class="ph-fact"><span id="lDist">Distance</span><b id="dDist"></b></div>
+          <div class="ph-fact"><span id="lBrg">Bearing</span><b id="dBrg"></b></div>
+        </div>
+        <button class="nb-btn nb-btn--lg nb-btn--block nb-btn--fill" type="button" id="gpsBtn"><i class="fa-solid fa-location-arrow"></i><span id="gpsText">Set waypoint</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="radar.js"></script>
+<script src="phone.js"></script>
+</body>
+</html>
