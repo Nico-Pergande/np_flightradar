@@ -36,7 +36,9 @@ Config.Access = {
   discordRoles = {},                                 -- np_discord role ids/names that grant the ground radar
 }
 
--- Admins see everything incl. primary radar. No ACE: identifiers and framework groups only.
+-- Admins see everything incl. primary radar. Permissions are np_admin nodes (np_flightradar.admin / .ground).
+-- This list only counts while np_admin is NOT running, next to the convars np_admin_fallback (identifiers) and
+-- np_admin_fallback_groups (ESX groups). No ACE.
 Config.Admin = {
   identifiers = {},                       -- e.g. 'license:abc...', 'discord:123...'
   groups = { 'admin', 'superadmin' },     -- ESX xPlayer.getGroup()

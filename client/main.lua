@@ -96,6 +96,12 @@ exports('OpenRadar', function(mode)
   NpFR.NUI.openWith(mode)
 end)
 exports('CloseRadar', function() NpFR.NUI.close() end)
+-- np_admin staff tool "Open admin flight radar" (server/np_admin.lua); the server still decides the grant
+RegisterNetEvent('np_flightradar:openRadar', function(mode)
+  if mode ~= nil and not Access.VALID[mode] then return end
+  if mode == 'phone' then return end
+  NpFR.NUI.openWith(mode)
+end)
 exports('IsRadarOpen', function() return NpFR.NUI.open end)
 exports('GetContacts', function() return NpFR.Radar.public(NpFR.Radar.contacts, 0) end)
 exports('GetTransponder', function() return NpFR.Xpdr.current() end)

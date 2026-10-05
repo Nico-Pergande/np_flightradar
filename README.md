@@ -23,7 +23,8 @@ bridge. Every `np_*` sibling is optional.
   and so are aircraft that despawn without an event.
 - **Access modes**: onboard radar (any aircraft seat), ground radar (jobs, grades, duty, Discord roles), handheld
   scanner item, radar stations (towers with unlimited range and primary radar), phone app, and admin. The server
-  works out the mode itself; it never trusts the mode a client asks for.
+  works out the mode itself; it never trusts the mode a client asks for. Admin and staff access are
+  [np_admin](https://github.com/Nico-Pergande/np_admin) permission nodes; no ACE is used anywhere.
 - **Transponder**: on/off, 4-digit octal squawk and a callsign, stored in a server-written state bag.
   `/squawk`, `/transponder` and `/callsign` change it, as do the radial menu and the panel.
 - **Emergencies**: squawking 7500 / 7600 / 7700 flags the contact (red, flashing). It also notifies the configured
@@ -55,6 +56,7 @@ bridge. Every `np_*` sibling is optional.
    ensure np_menu            # optional
    ensure np_identification  # optional
    ensure np_discord         # optional
+   ensure np_admin           # optional: permissions, settings, logs, staff tools
    ensure np_flightradar
    ```
 3. Give the scanner item to players if you use it. With np_inventory, the `flight_radar` item is registered at
@@ -78,7 +80,7 @@ Everything is in [`config.lua`](config.lua).
 | `Config.Access.requireDuty` | `true` | Duty is required (qb/qbx duty flag, ESX `job.onDuty` when present) |
 | `Config.Access.item` | `'flight_radar'` | Scanner item name (`false` turns it off) |
 | `Config.Access.discordRoles` | `{}` | np_discord roles that grant the ground radar |
-| `Config.Admin` | `identifiers = {}, groups = { 'admin', 'superadmin' }` | Admins (identifiers, ESX groups). **No ACE** is used anywhere |
+| `Config.Admin` | `identifiers = {}, groups = { 'admin', 'superadmin' }` | Extra admins **only while np_admin is not running** (identifiers, ESX groups). See [Permissions](#permissions) |
 | `Config.Stations` | LSIA, Sandy Shores, McKenzie | `{ label, coords, radius, jobs }`. Standing within `radius` gives the station radar |
 | `Config.PrimaryRadar` | `enabled = true, range = 8000` | Stations and admins see transponder-off aircraft as unidentified |
 | `Config.Transponder` | `defaultOn = true, defaultSquawk = '7000', copilotCanEdit = true, rate = 1000` | Transponder defaults and the per-player rate limit (ms) |
@@ -95,6 +97,44 @@ Everything is in [`config.lua`](config.lua).
 
 Callsigns are resolved in this order: the pilot's transponder callsign, then np_manufacturing's `vehicleCallsign`,
 then `Config.Callsigns.perModel`, then the pilot's framework callsign (qb `metadata.callsign`), then the plate.
+
+## Permissions
+
+Permissions are managed in [np_admin](https://github.com/Nico-Pergande/np_admin). np_flightradar registers two
+nodes, which show up in np_admin's permission editor under *Flight radar*:
+
+| Node | Grants |
+|---|---|
+| `np_flightradar.admin` | Admin radar: every aircraft, unlimited range (`Config.Ranges.admin`), primary radar. Also the staff tools below |
+| `np_flightradar.ground` | Ground radar without one of the `Config.Access.jobs` (staff, standalone servers). Range `Config.Ranges.ground` |
+
+When a player's groups change in np_admin, their radar access is re-resolved at once.
+
+np_admin is optional and never a hard dependency; the integration lib is vendored as `bridge/np_admin.lua`. Without
+np_admin running, a node is granted to:
+
+1. the server console;
+2. identifiers in the convar `np_admin_fallback`, e.g. `set np_admin_fallback "license:abc,discord:123"`;
+3. on ESX, the groups in the convar `np_admin_fallback_groups` (default `admin,superadmin`);
+4. the identifiers and ESX groups in `Config.Admin`.
+
+Everyone else is refused. No ACE is used: there are no `add_ace` lines to set up.
+
+### np_admin (optional)
+
+With np_admin running you also get:
+
+- **Settings** (`shared/np_admin_settings.lua`): 40 options under *Flight radar*, in the categories General, Ranges,
+  Traffic, Access, Transponder, Emergencies, TCAS and Blips. They cover the language, units and update interval, the range per
+  mode and the panel range steps, the traffic filter, the access rules (onboard radar, ground radar jobs, duty, Discord
+  roles, pilot licence, primary radar), transponder defaults, emergency jobs and the Discord channel, the TCAS-lite box
+  and the blip sizes and colours. Everything applies live except `Framework`, which needs a restart. Access changes
+  re-resolve every player at once. Stations (coordinates), `Config.CanUse`, `Config.Admin`, commands and key, item,
+  phone, callsigns, orgs, emergency codes and the integration switches stay in `config.lua`.
+- **Logs**: every emergency squawk (7500 / 7600 / 7700) is written to the np_admin log (category `np_flightradar`).
+  The np_discord log channel keeps working as before.
+- **Staff tools** under *Resource tools* (node `np_flightradar.admin`): *Open admin flight radar*, and *Set
+  transponder* for a player's aircraft (squawk, callsign, power).
 
 ## Commands and keys
 
@@ -120,6 +160,7 @@ restarts and can be switched off in `Config.Integrations`.
 | np_inventory | Registers the `flight_radar` scanner item (client export `np_flightradar.useScanner`) and checks item counts | Framework usable item and item count |
 | np_identification | Flags pilots without a valid `pilot_license` as *unlicensed*. Can also require the licence for the onboard radar | No licence flag |
 | np_discord | Ground-radar access by Discord role (cached, refreshed every 10 min), and an emergency log channel | Jobs and admins only |
+| np_admin | Permission nodes, 40 live settings, emergency log and staff tools (see [Permissions](#permissions)) | Fallback convars and `Config.Admin`; config.lua only |
 | np_menu | Radial **Flight radar** entry, and a **Transponder** submenu in aircraft (on/off, 7000/7500/7600/7700, callsign dialog) | Commands and key only |
 | np_manufacturing | Callsigns from the `vehicleCallsign` state bag | perModel / pilot callsign / plate |
 | np_helicam | *Camera active* flag from the `helicam_cam` state bag | No camera flag |
@@ -222,7 +263,9 @@ tests/run.sh
 This runs `luac -p` on every Lua file, followed by the unit tests for `shared/radarmath.lua` and `shared/access.lua`.
 It also runs server and client smoke tests against stubbed natives (`tests/harness.lua`): registry add/remove, no
 ghosts, range filter, own vehicle excluded, primary radar, transponder seat checks, rate limits, emergencies, an idle
-loop without subscribers, and the client blip/panel/TCAS flow. It needs Lua 5.4 (`lua`, `luac`).
+loop without subscribers, and the client blip/panel/TCAS flow. `tests/test_np_admin.lua` covers the np_admin
+integration against a fake np_admin: `NpAdmin.can` delegation and the fallback, node / settings / action
+registration, the settings schema, live settings and the emergency log. It needs Lua 5.4 (`lua`, `luac`).
 
 To work on the UI in a browser without the game, open `html/index.html?dev=1`. This mock mode feeds simulated traffic.
 

@@ -25,7 +25,8 @@ local function static(src)
   c = {
     at = now,
     job = info.job, grade = info.grade or 0, onduty = info.onduty ~= false,
-    isAdmin = Bridge.isAdmin(src), hasItem = S.hasItem(src), discordOk = S.discordOk(src),
+    isAdmin = Bridge.isAdmin(src), groundGrant = Bridge.can(src, Bridge.NODES.ground),
+    hasItem = S.hasItem(src), discordOk = S.discordOk(src),
   }
   A.cache[src] = c
   return c
@@ -61,7 +62,7 @@ function A.facts(src)
   local coords = ped and ped ~= 0 and GetEntityCoords(ped) or nil
   return {
     inAircraft = veh ~= nil, job = c.job, grade = c.grade, onduty = c.onduty,
-    hasItem = c.hasItem, station = A.stationAt(coords), isAdmin = c.isAdmin,
+    hasItem = c.hasItem, station = A.stationAt(coords), isAdmin = c.isAdmin, groundGrant = c.groundGrant,
     discordOk = c.discordOk, licensed = S.licensed(src),
   }
 end
@@ -106,4 +107,9 @@ function A.invalidate(src, push)
 end
 
 Bridge.onPlayerChanged(function(src) A.invalidate(src, true) end)
+
+-- np_admin: a player's groups / nodes changed, or np_admin (re)started / stopped -> re-resolve access
+function A.invalidateAll()
+  for _, p in ipairs(Bridge.players()) do A.invalidate(p, true) end
+end
 AddEventHandler('playerDropped', function() A.cache[source] = nil end)

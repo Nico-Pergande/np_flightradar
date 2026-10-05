@@ -1,6 +1,6 @@
 -- Server framework bridge (esx > qbx > qb > standalone). Every framework call is pcall'd: a framework
 -- that is restarting or different from what we expect degrades to "no job", never to an error inside a
--- net event. No ACE anywhere: admins come from Config.Admin.identifiers and framework groups.
+-- net event. No ACE anywhere: permissions are np_admin nodes (NpAdmin.can, see Bridge.can below).
 Bridge = {}
 
 local fw = nil
@@ -105,7 +105,13 @@ function Bridge.identifiers(src)
   return out
 end
 
-function Bridge.isAdmin(src)
+-- Permission nodes (managed in np_admin):
+--   np_flightradar.admin   admin radar (everything, unlimited range, primary radar)
+--   np_flightradar.ground  ground radar without an allowed job (staff, standalone servers)
+Bridge.NODES = { admin = 'np_flightradar.admin', ground = 'np_flightradar.ground' }
+
+-- Config.Admin (identifiers / ESX groups): kept as an extra fallback for servers without np_admin
+local function configAdmin(src)
   local ids = Bridge.identifiers(src)
   for _, id in ipairs((Config.Admin and Config.Admin.identifiers) or {}) do
     if ids[id] then return true end
@@ -117,6 +123,22 @@ function Bridge.isAdmin(src)
     end
   end
   return false
+end
+Bridge.configAdmin = configAdmin
+
+-- Without np_admin: the lib's fallback (console, convar np_admin_fallback, ESX groups in
+-- np_admin_fallback_groups) or Config.Admin. With np_admin running, np_admin alone decides.
+NpAdmin.fallback = function(src, node)
+  if NpAdmin.defaultFallback(src, node) then return true end
+  return configAdmin(src)
+end
+
+function Bridge.can(src, node)
+  return NpAdmin.can(src, node) == true
+end
+
+function Bridge.isAdmin(src)
+  return Bridge.can(src, Bridge.NODES.admin)
 end
 
 -- Framework item count (np_inventory is asked first by integrations/server.lua)

@@ -137,7 +137,7 @@ end
 
 function S.discordLog(entry)
   local ch = Config.Emergency and Config.Emergency.discordChannel
-  if not ch or not discord.active() then return end
+  if type(ch) ~= 'string' or ch == '' or not discord.active() then return end
   CreateThread(function() discord.call('Log', ch, entry) end)
 end
 

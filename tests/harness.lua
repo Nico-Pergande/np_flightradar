@@ -1,7 +1,7 @@
 -- Plain-Lua (5.4) server harness: stubs the FiveM natives, events, exports, state bags, entities and a
 -- controllable clock with a cooperative thread scheduler, then boots the server files in fxmanifest order.
 --   local H = dofile('tests/harness.lua')
---   H.boot()                 shared + bridge/server + integrations/server + server/*.lua
+--   H.boot()                 shared (incl. the np_admin lib + settings) + bridge/server + integrations/server + server/*.lua
 --   H.advance(ms)            run threads / timers up to now + ms
 local H = {}
 _G.H = H
@@ -175,7 +175,14 @@ exports = setmetatable({}, {
 function GetResourceState(res) return H.resources[res] or 'missing' end
 function GetCurrentResourceName() return 'np_flightradar' end
 function GetResourceMetadata() return '1.0.0' end
-function GetConvar(_, def) return 'on' end
+H.convars = { onesync = 'on' }  -- unset convars return the default
+function GetConvar(name, def)
+  local v = H.convars[name]
+  if v == nil then return def end
+  return v
+end
+H.invoking = nil                 -- GetInvokingResource() result (np_admin:settingsChanged checks it)
+function GetInvokingResource() return H.invoking end
 function IsDuplicityVersion() return true end
 function GetGameTimer() return H.now end
 function GetHashKey(s)
@@ -291,6 +298,8 @@ function H.boot(opts)
   opts = opts or {}
   load('config.lua')
   if opts.config then opts.config(Config) end
+  load('bridge/np_admin.lua')
+  load('shared/np_admin_settings.lua')
   load('shared/locale.lua')
   load('locales/en.lua')
   load('locales/de.lua')
@@ -299,7 +308,7 @@ function H.boot(opts)
   load('integrations/registry.lua')
   load('bridge/server.lua')
   load('integrations/server.lua')
-  for _, f in ipairs({ 'registry', 'access', 'transponder', 'broadcast', 'exports', 'main' }) do
+  for _, f in ipairs({ 'registry', 'access', 'transponder', 'broadcast', 'exports', 'main', 'np_admin' }) do
     load('server/' .. f .. '.lua')
   end
   H.advance(0)
