@@ -1,0 +1,270 @@
+/* ==========================================================================
+   Nimbus UI — design tokens (CSS custom properties)
+   Source of truth mirrors tokens/tokens.json. Prefix: --nb-
+   ========================================================================== */
+:root {
+  /* ---------------------------------------------------------------------
+     COLOUR — tile tints. Each tint = 3 gradient stops (top / mid / bottom)
+     plus an "accent" (solid, for bars/timers/routes) and a "fill"
+     (2-stop gradient used by level tiles).
+     ------------------------------------------------------------------- */
+  --nb-neutral-top: #b4b4b4;  --nb-neutral-mid: #8a8a8a;  --nb-neutral-bot: #5e5e5e;  --nb-neutral-accent: rgba(255,255,255,.75);
+  --nb-red-top:     #f08a8a;  --nb-red-mid:     #d24a4a;  --nb-red-bot:     #a82e2e;  --nb-red-accent:     #ef6a6a;
+  --nb-orange-top:  #f5b48c;  --nb-orange-mid:  #e07c4c;  --nb-orange-bot:  #b8562e;  --nb-orange-accent:  #ef9a6a;
+  --nb-rust-top:    #f07a4a;  --nb-rust-mid:    #d84a22;  --nb-rust-bot:    #a8301a;  --nb-rust-accent:    #f08a5a;
+  --nb-pink-top:    #eab0c0;  --nb-pink-mid:    #c87088;  --nb-pink-bot:    #9a4a64;  --nb-pink-accent:    #e0a0b0;
+  --nb-olive-top:   #b8a88a;  --nb-olive-mid:   #857860;  --nb-olive-bot:   #5e5546;  --nb-olive-accent:   #c8b896;
+  --nb-lilac-top:   #c8a8c8;  --nb-lilac-mid:   #8e8090;  --nb-lilac-bot:   #5e5660;  --nb-lilac-accent:   #d0b0d0;
+  --nb-green-top:   #a8d4a0;  --nb-green-mid:   #6aa864;  --nb-green-bot:   #467a42;  --nb-green-accent:   #8cc884;
+  --nb-blue-top:    #a8c0e0;  --nb-blue-mid:    #6a88b8;  --nb-blue-bot:    #465e8a;  --nb-blue-accent:    #8aa8d8;
+  --nb-aqua-top:    #a8d8e0;  --nb-aqua-mid:    #6aa8b6;  --nb-aqua-bot:    #3f7684;  --nb-aqua-accent:    #8cc8d4;
+
+  /* Ready-made tile gradients (180deg, glossy squircle) */
+  --nb-grad-neutral: linear-gradient(180deg, var(--nb-neutral-top) 0%, var(--nb-neutral-mid) 45%, var(--nb-neutral-bot) 100%);
+  --nb-grad-red:     linear-gradient(180deg, var(--nb-red-top) 0%,     var(--nb-red-mid) 50%,     var(--nb-red-bot) 100%);
+  --nb-grad-orange:  linear-gradient(180deg, var(--nb-orange-top) 0%,  var(--nb-orange-mid) 50%,  var(--nb-orange-bot) 100%);
+  --nb-grad-rust:    linear-gradient(180deg, var(--nb-rust-top) 0%,    var(--nb-rust-mid) 50%,    var(--nb-rust-bot) 100%);
+  --nb-grad-pink:    linear-gradient(180deg, var(--nb-pink-top) 0%,    var(--nb-pink-mid) 50%,    var(--nb-pink-bot) 100%);
+  --nb-grad-olive:   linear-gradient(180deg, var(--nb-olive-top) 0%,   var(--nb-olive-mid) 50%,   var(--nb-olive-bot) 100%);
+  --nb-grad-lilac:   linear-gradient(180deg, var(--nb-lilac-top) 0%,   var(--nb-lilac-mid) 50%,   var(--nb-lilac-bot) 100%);
+  --nb-grad-green:   linear-gradient(180deg, var(--nb-green-top) 0%,   var(--nb-green-mid) 50%,   var(--nb-green-bot) 100%);
+  --nb-grad-blue:    linear-gradient(180deg, var(--nb-blue-top) 0%,    var(--nb-blue-mid) 50%,    var(--nb-blue-bot) 100%);
+  --nb-grad-aqua:    linear-gradient(180deg, var(--nb-aqua-top) 0%,    var(--nb-aqua-mid) 50%,    var(--nb-aqua-bot) 100%);
+
+  /* Level-tile liquid fills (2 stops: top -> darker mid/bottom) */
+  --nb-fill-neutral: linear-gradient(180deg, #d8d8d8, #8a8a8a);
+  --nb-fill-red:     linear-gradient(180deg, var(--nb-red-top), #b83a3a);
+  --nb-fill-orange:  linear-gradient(180deg, var(--nb-orange-top), #c0602e);
+  --nb-fill-rust:    linear-gradient(180deg, var(--nb-rust-top), var(--nb-rust-bot));
+  --nb-fill-pink:    linear-gradient(180deg, var(--nb-pink-top), var(--nb-pink-bot));
+  --nb-fill-olive:   linear-gradient(180deg, var(--nb-olive-top), var(--nb-olive-bot));
+  --nb-fill-lilac:   linear-gradient(180deg, #d0b0d0, #8a5a8a);
+  --nb-fill-green:   linear-gradient(180deg, var(--nb-green-top), #4f8f4a);
+  --nb-fill-blue:    linear-gradient(180deg, var(--nb-blue-top), #4e6a9a);
+  --nb-fill-aqua:    linear-gradient(180deg, var(--nb-aqua-top), #4a8a9a);
+
+  /* Tile chrome */
+  --nb-tile-highlight: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,0) 50%);
+  --nb-level-track:    linear-gradient(180deg, #6a6a6a, #3c3c3c);
+  --nb-badge:          #e8262c;
+
+  /* Glass surfaces */
+  --nb-glass-top:      rgba(110,110,110,.62);
+  --nb-glass-bot:      rgba(48,48,48,.68);
+  --nb-glass:          linear-gradient(180deg, var(--nb-glass-top), var(--nb-glass-bot));
+  --nb-glass-danger:   linear-gradient(180deg, rgba(150,90,90,.65), rgba(60,35,35,.72));
+  --nb-glass-call:     linear-gradient(180deg, rgba(150,70,70,.70), rgba(70,30,30,.75));
+  --nb-glass-sunken:   rgba(0,0,0,.35);
+  --nb-glass-inner:    rgba(0,0,0,.25);
+  --nb-glass-border:   rgba(255,255,255,.10);
+  /* Edges are lit from above: bright top, faint sides, near-invisible bottom. Never a uniform border. */
+  --nb-glass-border-color: rgba(255,255,255,.12) rgba(255,255,255,.07) rgba(255,255,255,.02); /* top · sides · bottom */
+  --nb-edge-lit-soft:      rgba(255,255,255,.10) rgba(255,255,255,.06) rgba(255,255,255,.02); /* buttons */
+  --nb-glass-track:    rgba(255,255,255,.12);
+  --nb-glass-chip:     rgba(255,255,255,.12);
+  --nb-glass-btn:      linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,.08));
+
+  /* Text (white at fixed opacities — never grey hex) */
+  --nb-text:           #ffffff;
+  --nb-text-body:      rgba(255,255,255,.82);
+  --nb-text-muted:     rgba(255,255,255,.60);
+  --nb-text-subtle:    rgba(255,255,255,.50);
+  --nb-text-faint:     rgba(255,255,255,.45);
+  --nb-text-disabled:  rgba(255,255,255,.25);
+  --nb-text-on-light:  #333333;
+
+  /* State */
+  --nb-danger-ring:    #ef5a5a;
+  --nb-danger-glow:    rgba(239,90,90,.60);
+  --nb-focus-ring:     #ffffff;
+
+  /* Key cap */
+  --nb-key-bg:         linear-gradient(180deg, #d8d8d8, #9a9a9a);
+  --nb-key-fg:         #333333;
+
+  /* Device / wallpaper */
+  --nb-device-bezel:   linear-gradient(135deg, #d8d8d8, #7a7a7a 40%, #c8c8c8);
+  --nb-wallpaper:
+    radial-gradient(ellipse 260px 140px at 30% 38%, rgba(230,230,230,.55), transparent 70%),
+    radial-gradient(ellipse 220px 120px at 75% 34%, rgba(210,210,210,.45), transparent 70%),
+    radial-gradient(ellipse 300px 160px at 55% 52%, rgba(170,170,170,.45), transparent 70%),
+    radial-gradient(ellipse 260px 120px at 20% 65%, rgba(140,140,140,.35), transparent 70%),
+    linear-gradient(180deg, #3a3a3a 0%, #6a6a6a 35%, #4a4a4a 70%, #2a2a2a 100%);
+  --nb-backdrop:
+    radial-gradient(ellipse 700px 300px at 30% 20%, rgba(200,200,200,.22), transparent 70%),
+    radial-gradient(ellipse 600px 260px at 80% 70%, rgba(160,160,160,.18), transparent 70%),
+    linear-gradient(180deg, #3a3a3a, #1c1c1c);
+  --nb-map-bg:         linear-gradient(135deg, #7a7a7a, #474747);
+
+  /* ---------------------------------------------------------------------
+     TYPOGRAPHY
+     ------------------------------------------------------------------- */
+  --nb-font: 'Quicksand', ui-rounded, 'Segoe UI', sans-serif;
+  --nb-weight-medium: 500;
+  --nb-weight-semibold: 600;
+  --nb-weight-bold: 700;
+
+  --nb-text-3xs: 8px;     /* badge count */
+  --nb-text-2xs: 10px;    /* chip label, micro caps */
+  --nb-text-xs: 11px;     /* app name, time, meta chips */
+  --nb-text-sm: 12.5px;   /* buttons */
+  --nb-text-md: 13px;     /* body / message */
+  --nb-text-base: 14px;   /* prompts, street name */
+  --nb-text-lg: 15px;     /* titles, chip values */
+  --nb-text-xl: 17px;     /* announcement title */
+  --nb-text-2xl: 22px;    /* tile glyph lg */
+  --nb-text-3xl: 26px;    /* page heading */
+  --nb-text-4xl: 44px;    /* ammo count */
+  --nb-text-5xl: 58px;    /* speedometer */
+  --nb-text-display: 72px;/* lock-screen clock */
+
+  --nb-leading-tight: 1;
+  --nb-leading-snug: 1.2;
+  --nb-leading-body: 1.35;
+  --nb-tracking-caps: .06em;
+  --nb-tracking-caps-wide: .1em;
+  --nb-tracking-display: -1px;
+
+  /* ---------------------------------------------------------------------
+     RADIUS
+     ------------------------------------------------------------------- */
+  --nb-radius-xs: 6px;        /* key cap */
+  --nb-radius-sm: 8px;        /* meta chip */
+  --nb-radius-tile-sm: 9px;   /* 30px tile */
+  --nb-radius-btn: 11px;      /* button */
+  --nb-radius-tile: 12px;     /* 44px tile */
+  --nb-radius-tile-lg: 14px;  /* 52px tile */
+  --nb-radius-tile-xl: 15px;  /* 56px tile */
+  --nb-radius-pill: 16px;     /* stat chip / prompt */
+  --nb-radius-card: 20px;     /* notification card */
+  --nb-radius-panel: 24px;    /* hotbar, weapon */
+  --nb-radius-map: 26px;      /* minimap, dock */
+  --nb-radius-panel-lg: 28px; /* speedometer */
+  --nb-radius-screen: 52px;   /* phone screen */
+  --nb-radius-device: 62px;   /* phone bezel */
+  --nb-radius-round: 999px;
+
+  /* ---------------------------------------------------------------------
+     SPACING — 4pt scale (+ half steps used by dense HUD chips)
+     ------------------------------------------------------------------- */
+  --nb-space-0: 0;
+  --nb-space-0-5: 2px;
+  --nb-space-1: 4px;
+  --nb-space-1-5: 6px;
+  --nb-space-2: 8px;
+  --nb-space-2-5: 10px;
+  --nb-space-3: 12px;
+  --nb-space-3-5: 14px;
+  --nb-space-4: 16px;
+  --nb-space-4-5: 18px;
+  --nb-space-5: 20px;
+  --nb-space-6: 24px;
+  --nb-space-7: 28px;
+  --nb-space-8: 32px;
+  --nb-space-10: 40px;
+  --nb-space-12: 48px;
+  --nb-space-14: 56px;
+  --nb-space-16: 64px;
+
+  /* HUD safe area (1920x1080 reference) */
+  --nb-safe-x: 28px;
+  --nb-safe-y: 24px;
+  --nb-zone-gap: 10px;
+
+  /* ---------------------------------------------------------------------
+     SHADOW / INSET
+     ------------------------------------------------------------------- */
+  --nb-inset-highlight: inset 0 1px 0 rgba(255,255,255,.45);
+  --nb-inset-highlight-soft: inset 0 1px 0 rgba(255,255,255,.18);
+  --nb-inset-shade: inset 0 -2px 4px rgba(0,0,0,.25);
+  --nb-shadow-tile: inset 0 1px 0 rgba(255,255,255,.45), inset 0 -2px 4px rgba(0,0,0,.25), 0 4px 10px rgba(0,0,0,.35);
+  --nb-shadow-level: inset 0 1px 0 rgba(255,255,255,.30), inset 0 -2px 4px rgba(0,0,0,.30), 0 4px 10px rgba(0,0,0,.35);
+  --nb-shadow-glass: inset 0 1px 0 rgba(255,255,255,.18), 0 10px 30px rgba(0,0,0,.40);
+  --nb-shadow-device: 0 20px 60px rgba(0,0,0,.70);
+  --nb-shadow-key: inset 0 1px 0 #ffffff, 0 1px 0 rgba(0,0,0,.40);
+  --nb-shadow-btn: inset 0 1px 0 rgba(255,255,255,.25);
+  --nb-shadow-glyph: 0 1px 2px rgba(0,0,0,.35);
+  --nb-ring-selected: 0 0 0 2px #ffffff, 0 6px 14px rgba(0,0,0,.40);
+  --nb-ring-danger: 0 0 0 2px var(--nb-danger-ring), 0 0 16px var(--nb-danger-glow);
+
+  /* ---------------------------------------------------------------------
+     BLUR
+     ------------------------------------------------------------------- */
+  --nb-blur-glass: 22px;
+  --nb-blur-soft: 12px;
+  --nb-saturate-glass: 1.2;
+
+  /* ---------------------------------------------------------------------
+     MOTION
+     ------------------------------------------------------------------- */
+  --nb-dur-instant: 80ms;
+  --nb-dur-fast: 140ms;
+  --nb-dur-base: 220ms;
+  --nb-dur-toast-in: 420ms;
+  --nb-dur-toast-out: 260ms;
+  --nb-dur-fill: 600ms;
+  --nb-dur-pulse: 1400ms;
+  --nb-ease-standard: cubic-bezier(.2, 0, 0, 1);
+  --nb-ease-enter: cubic-bezier(.16, 1, .3, 1);
+  --nb-ease-exit: cubic-bezier(.4, 0, 1, 1);
+  --nb-ease-spring: cubic-bezier(.34, 1.4, .64, 1);
+  --nb-ease-fill: cubic-bezier(.25, .8, .25, 1);
+  --nb-toast-duration: 5000ms;
+
+  /* ---------------------------------------------------------------------
+     Z-LAYERS
+     ------------------------------------------------------------------- */
+  --nb-z-world: 0;
+  --nb-z-hud: 10;
+  --nb-z-map: 20;
+  --nb-z-prompt: 30;
+  --nb-z-progress: 40;
+  --nb-z-toast: 50;
+  --nb-z-announce: 60;
+  --nb-z-phone: 70;
+  --nb-z-modal: 80;
+  --nb-z-staff: 90;
+  --nb-z-debug: 100;
+
+  /* ---------------------------------------------------------------------
+     SIZES
+     ------------------------------------------------------------------- */
+  --nb-size-tile-xs: 22px;
+  --nb-size-tile-sm: 30px;
+  --nb-size-tile-md: 44px;
+  --nb-size-tile-lg: 52px;
+  --nb-size-tile-xl: 56px;
+  --nb-size-glyph-sm: 14px;
+  --nb-size-glyph-md: 20px;
+  --nb-size-glyph-lg: 22px;
+  --nb-size-glyph-xl: 24px;
+  --nb-size-key: 20px;
+  --nb-size-badge: 14px;
+  --nb-size-card: 360px;
+  --nb-size-toast: 340px;
+  --nb-size-announce: 520px;
+  --nb-size-progress: 340px;
+  --nb-size-map-w: 300px;
+  --nb-size-map-h: 190px;
+  --nb-size-phone-w: 400px;
+  --nb-size-phone-h: 800px;
+
+  /* ---------------------------------------------------------------------
+     PHONE APP KIT (css/phone-kit.css) — in-app screens, sheets, island, CC.
+     From np_phone. App screens are dark grey, never pure black.
+     ------------------------------------------------------------------- */
+  --nb-app-bg:        #141415;                 /* app screen background */
+  --nb-app-card:      linear-gradient(180deg, rgba(255,255,255,.085), rgba(255,255,255,.05)); /* grouped list card */
+  --nb-app-card-border: rgba(255,255,255,.09) rgba(255,255,255,.05) rgba(255,255,255,.015);
+  --nb-app-fill:      rgba(255,255,255,.10);   /* search, segmented track, tinted buttons, filters */
+  --nb-app-fill-strong: rgba(255,255,255,.18); /* pressed / selected segment */
+  --nb-app-sep:       rgba(255,255,255,.08);   /* hairline between rows */
+  --nb-app-bar:       rgba(20,20,21,.82);      /* tab bar (with soft blur) */
+  --nb-app-sheet:     linear-gradient(180deg, #2b2b2c, #1c1c1d);
+  --nb-app-scrim:     rgba(0,0,0,.45);
+  --nb-island-bg:     #000000;
+  --nb-switch-on:     var(--nb-green-mid);     /* semantic: on = green, never the app accent */
+  --nb-status-h:      56px;                    /* status-bar safe area inside the screen */
+  --nb-home-h:        34px;                    /* home-indicator safe area */
+  --nb-ease-sheet:    cubic-bezier(.32, .72, 0, 1); /* iOS sheet / app zoom */
+}

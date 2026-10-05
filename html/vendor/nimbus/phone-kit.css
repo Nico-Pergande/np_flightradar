@@ -1,0 +1,488 @@
+/* ==========================================================================
+   Nimbus UI — phone app kit
+   In-app screens for a phone built on .nb-phone (components.css §19):
+   nav bar, large title, grouped lists, controls, tab bar, sheets, dialogs,
+   bubbles, Dynamic Island, Control Center, widgets, keypad, call screen.
+   Distilled from np_phone (iOS grammar, Nimbus look).
+   Load after components.css (and before theme.css).
+
+   Accent rule: inside an app the app's tile tint becomes the accent for
+   *interactive* things only (back link, nav buttons, active tab, filled
+   button, selected filter, outgoing bubble). Put .nb-accent--<tint> on
+   .nb-screen. Grey-tile apps have no class → accent = white.
+   Semantic colours still win: switch on = green, destructive = red.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   22. App screen — fills .nb-phone__screen, owns the safe areas
+   <div class="nb-screen nb-accent--red"><div class="nb-screen__body">…</div><nav class="nb-tabbar">…</nav></div>
+   -------------------------------------------------------------------------- */
+.nb-screen {
+  --nb-app-accent: var(--nb-accent, var(--nb-text));
+  position: absolute; inset: 0; z-index: 4;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  background: var(--nb-app-bg);
+  color: var(--nb-text);
+  font-size: var(--nb-text-lg);
+}
+.nb-screen__body {
+  flex: 1; min-height: 0; position: relative;
+  padding: var(--nb-status-h) var(--nb-space-4) var(--nb-home-h);
+  overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+.nb-screen__body::-webkit-scrollbar { display: none; }
+.nb-screen--tabs .nb-screen__body { padding-bottom: 100px; }   /* room for .nb-tabbar */
+.nb-screen--flush .nb-screen__body { padding-left: 0; padding-right: 0; }
+.nb-screen--wall { background: transparent; }                  /* app over blurred wallpaper (Clock, Weather) */
+.nb-screen--wall::before {
+  content: ""; position: absolute; inset: -30px; z-index: -1;
+  background: var(--nb-wallpaper); filter: blur(26px) brightness(.55);
+}
+
+/* --------------------------------------------------------------------------
+   23. Nav bar + large title
+   -------------------------------------------------------------------------- */
+.nb-navbar {
+  position: relative; height: 40px; margin: 0 calc(-1 * var(--nb-space-2));
+  padding: 0 var(--nb-space-2);
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: var(--nb-text-lg); font-weight: var(--nb-weight-semibold);
+  color: var(--nb-app-accent);
+}
+.nb-navbar__side { display: flex; align-items: center; gap: var(--nb-space-3-5); min-width: 60px; z-index: 1; }
+.nb-navbar__side:last-child { justify-content: flex-end; }
+.nb-navbar__back, .nb-navbar__action {
+  appearance: none; background: none; border: 0; padding: var(--nb-space-1-5) 0;
+  display: inline-flex; align-items: center; gap: 5px;
+  font: inherit; color: inherit; cursor: pointer;
+}
+.nb-navbar__back i, .nb-navbar__action i { font-size: 17px; }
+.nb-navbar__title {
+  position: absolute; left: 80px; right: 80px; text-align: center;
+  color: var(--nb-text); font-weight: var(--nb-weight-bold);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.nb-title { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--nb-space-2-5); margin: 6px 0 var(--nb-space-3); }
+.nb-title h1 { margin: 0; font-size: 30px; font-weight: var(--nb-weight-bold); line-height: 1.1; letter-spacing: -.2px; }
+.nb-title__eyebrow {
+  font-size: var(--nb-text-xs); font-weight: var(--nb-weight-bold);
+  letter-spacing: var(--nb-tracking-caps); text-transform: uppercase;
+  color: var(--nb-text-muted); margin-bottom: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   24. Search field + text field
+   -------------------------------------------------------------------------- */
+.nb-search {
+  height: 36px; margin-bottom: var(--nb-space-3-5);
+  display: flex; align-items: center; gap: var(--nb-space-2); padding: 0 var(--nb-space-2-5);
+  border-radius: var(--nb-radius-btn);
+  background: var(--nb-app-fill);
+  color: var(--nb-text-subtle); font-size: var(--nb-text-lg);
+}
+.nb-search input { flex: 1; min-width: 0; background: none; border: 0; outline: 0; font: inherit; color: var(--nb-text); }
+.nb-search input::placeholder { color: var(--nb-text-subtle); }
+
+.nb-field { display: block; margin-bottom: var(--nb-space-3); }
+.nb-field__label {
+  display: block; margin: 0 var(--nb-space-1) var(--nb-space-1-5);
+  font-size: var(--nb-text-xs); font-weight: var(--nb-weight-bold);
+  letter-spacing: var(--nb-tracking-caps); text-transform: uppercase; color: var(--nb-text-muted);
+}
+.nb-field__box {
+  display: flex; align-items: center; gap: var(--nb-space-2); min-height: 44px; padding: 0 var(--nb-space-3);
+  border-radius: var(--nb-radius-btn);
+  background: var(--nb-app-card); border: 1px solid; border-color: var(--nb-app-card-border);
+}
+.nb-field__box > i { color: var(--nb-text-subtle); }
+.nb-field__box input, .nb-field__box textarea {
+  flex: 1; min-width: 0; padding: 11px 0; resize: none;
+  background: none; border: 0; outline: 0; font: inherit; font-size: var(--nb-text-lg); color: var(--nb-text);
+}
+.nb-field__box input::placeholder, .nb-field__box textarea::placeholder { color: var(--nb-text-disabled); }
+.nb-field__box:focus-within { border-color: var(--nb-app-accent) rgba(255,255,255,.07) rgba(255,255,255,.02); }
+
+/* --------------------------------------------------------------------------
+   25. Grouped list (inset cards with hairline rows)
+   <section class="nb-section"><div class="nb-section__title">Account</div>
+     <div class="nb-list"><div class="nb-row nb-row--link">
+       <span class="nb-tile nb-tile--sm nb-tile--blue"><i class="fa-solid fa-wallet"></i></span>
+       <div class="nb-row__body"><div class="nb-row__title">Wallet</div><div class="nb-row__sub">$24,580</div></div>
+       <span class="nb-row__meta">2</span></div></div></section>
+   -------------------------------------------------------------------------- */
+.nb-section { margin-bottom: var(--nb-space-4-5); }
+.nb-section__title, .nb-section__footer {
+  margin: 0 var(--nb-space-1) 7px;
+  font-size: var(--nb-text-xs); font-weight: var(--nb-weight-bold);
+  letter-spacing: var(--nb-tracking-caps); text-transform: uppercase; color: var(--nb-text-muted);
+}
+.nb-section__footer { margin: 7px var(--nb-space-1) 0; text-transform: none; letter-spacing: 0; font-weight: var(--nb-weight-medium); line-height: var(--nb-leading-body); }
+.nb-list {
+  border-radius: var(--nb-radius-tile-lg);
+  background: var(--nb-app-card);
+  border: 1px solid; border-color: var(--nb-app-card-border);
+  overflow: hidden;
+}
+.nb-list--plain { background: none; border: 0; border-radius: 0; }
+.nb-row {
+  --nb-sep-left: var(--nb-space-3-5);
+  position: relative; width: 100%; min-height: 46px;
+  display: flex; align-items: center; gap: var(--nb-space-3);
+  padding: var(--nb-space-2) var(--nb-space-3-5);
+  font-size: var(--nb-text-lg); text-align: left; color: var(--nb-text);
+}
+.nb-list--plain .nb-row { padding-left: 0; padding-right: 0; }
+.nb-row + .nb-row::before {
+  content: ""; position: absolute; top: 0; right: 0; left: var(--nb-sep-left); height: 1px;
+  background: var(--nb-app-sep);
+}
+.nb-row:has(> .nb-tile:first-child, > .nb-avatar:first-child) { --nb-sep-left: 56px; }  /* modern CEF; else add .nb-row--lead */
+.nb-row--lead { --nb-sep-left: 56px; }
+.nb-row--link, .nb-row[role="button"] { cursor: pointer; }
+.nb-row--link:active, .nb-row[role="button"]:active { background: rgba(255,255,255,.06); }
+.nb-row__body { flex: 1; min-width: 0; }
+.nb-row__title, .nb-row__sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nb-row__title { font-weight: var(--nb-weight-semibold); }
+.nb-row__sub { margin-top: 2px; font-size: var(--nb-text-md); color: var(--nb-text-muted); }
+.nb-row__meta { flex: none; display: flex; align-items: center; gap: var(--nb-space-1-5); font-size: var(--nb-text-base); color: var(--nb-text-muted); font-variant-numeric: tabular-nums; }
+.nb-row--link > .nb-row__meta::after,
+.nb-row--link:not(:has(.nb-row__meta))::after {
+  content: "\f054"; font: 900 12px/1 "Font Awesome 6 Free"; color: var(--nb-text-disabled);
+}
+.nb-row--destructive .nb-row__title { color: var(--nb-red-accent); }
+.nb-row--action .nb-row__title { color: var(--nb-app-accent); }
+.nb-amount--pos { color: var(--nb-green-accent); }  /* money in/out: semantic, not accent */
+.nb-amount--neg { color: var(--nb-red-accent); }
+
+/* --------------------------------------------------------------------------
+   26. Controls — switch, segmented, filter chips, buttons, slider, state pill
+   -------------------------------------------------------------------------- */
+.nb-switch {
+  appearance: none; position: relative; flex: none; cursor: pointer;
+  width: 47px; height: 28px; border: 0; border-radius: 14px;
+  background: rgba(120,120,128,.36);
+  transition: background var(--nb-dur-base);
+}
+.nb-switch::after {
+  content: ""; position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--nb-text); box-shadow: 0 3px 8px rgba(0,0,0,.18);
+  transition: transform var(--nb-dur-base) var(--nb-ease-sheet);
+}
+.nb-switch.is-on, .nb-switch:checked { background: var(--nb-switch-on); }
+.nb-switch.is-on::after, .nb-switch:checked::after { transform: translateX(19px); }
+.nb-switch:disabled { opacity: .4; }
+
+.nb-segmented { display: flex; padding: 2px; margin-bottom: var(--nb-space-3-5); border-radius: 9px; background: var(--nb-app-fill); }
+.nb-segmented > button {
+  appearance: none; flex: 1; height: 28px; border: 0; border-radius: 7px; cursor: pointer;
+  background: none; font: inherit; font-size: var(--nb-text-md); font-weight: var(--nb-weight-semibold); color: var(--nb-text-body);
+}
+.nb-segmented > .is-on { background: var(--nb-glass-btn); color: var(--nb-text); box-shadow: 0 3px 8px rgba(0,0,0,.18), var(--nb-shadow-btn); }
+
+.nb-filters { display: flex; gap: var(--nb-space-2); overflow-x: auto; padding-bottom: 2px; margin-bottom: var(--nb-space-3); scrollbar-width: none; }
+.nb-filter {
+  appearance: none; flex: none; height: 28px; padding: 0 var(--nb-space-3); border: 0; border-radius: 14px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--nb-app-fill); font: inherit; font-size: var(--nb-text-md); font-weight: var(--nb-weight-bold); color: var(--nb-text);
+}
+.nb-filter.is-on { background: var(--nb-app-accent); color: var(--nb-app-bg); }
+
+/* buttons: .nb-btn (glass, components.css) + in-app variants */
+.nb-btn--tinted { background: var(--nb-app-fill); border-color: transparent; box-shadow: none; text-shadow: none; color: var(--nb-app-accent); }
+.nb-btn--fill   { background: var(--nb-app-accent); border-color: transparent; box-shadow: var(--nb-inset-highlight); color: var(--nb-app-bg); text-shadow: none; }
+.nb-btn--plain  { background: none; border-color: transparent; box-shadow: none; text-shadow: none; color: var(--nb-app-accent); padding-left: var(--nb-space-1-5); padding-right: var(--nb-space-1-5); }
+.nb-btn--danger { color: var(--nb-red-accent); }
+.nb-btn--lg     { min-height: 50px; border-radius: var(--nb-radius-tile-lg); font-size: var(--nb-text-lg); }
+/* coloured fills (accent/red/green) take dark text only when the accent is light (white or pale);
+   tinted apps whose accent is mid-tone can switch with .nb-btn--on-dark */
+.nb-btn--on-dark { color: var(--nb-text); text-shadow: var(--nb-shadow-glyph); }
+
+.nb-slider { position: relative; height: 28px; display: flex; align-items: center; cursor: pointer; touch-action: none; }
+.nb-slider::before { content: ""; position: absolute; left: 0; right: 0; height: 4px; border-radius: 2px; background: rgba(120,120,128,.4); }
+.nb-slider__fill { position: absolute; left: 0; height: 4px; width: calc(var(--nb-value, 50) * 1%); border-radius: 2px; background: var(--nb-app-accent); }
+.nb-slider__knob { position: absolute; left: calc(var(--nb-value, 50) * 1%); width: 26px; height: 26px; translate: -50% 0; border-radius: 50%; background: var(--nb-text); box-shadow: 0 3px 8px rgba(0,0,0,.3); }
+
+.nb-state {      /* status pill: dot + label (Open, Impounded, Paid, Overdue…) */
+  display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 9px; border-radius: 11px;
+  font-size: var(--nb-text-xs); font-weight: var(--nb-weight-bold); white-space: nowrap;
+  color: var(--nb-text-muted); background: var(--nb-app-fill);
+}
+.nb-state::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.nb-state--success { color: var(--nb-green-accent); background: rgba(106,168,100,.18); }
+.nb-state--warning { color: var(--nb-orange-accent); background: rgba(224,124,76,.18); }
+.nb-state--danger  { color: var(--nb-red-accent); background: rgba(210,74,74,.18); }
+
+/* --------------------------------------------------------------------------
+   27. Tab bar
+   -------------------------------------------------------------------------- */
+.nb-tabbar {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 30; height: 84px; padding-top: var(--nb-space-2);
+  display: flex; justify-content: space-around;
+  background: var(--nb-app-bar);
+  -webkit-backdrop-filter: blur(var(--nb-blur-glass)); backdrop-filter: blur(var(--nb-blur-glass));
+  border-top: 1px solid var(--nb-app-sep);
+}
+.nb-tab {
+  appearance: none; position: relative; width: 64px; border: 0; background: none; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  font: inherit; font-size: var(--nb-text-2xs); font-weight: var(--nb-weight-bold); color: var(--nb-text-faint);
+}
+.nb-tab > i { height: 22px; display: grid; place-items: center; font-size: 19px; }
+.nb-tab.is-on { color: var(--nb-app-accent); }
+.nb-tab__badge {
+  position: absolute; top: -4px; left: 36px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+  background: var(--nb-badge); color: var(--nb-text); font-size: 10px; line-height: 18px;
+}
+
+/* --------------------------------------------------------------------------
+   28. Sheet, action sheet, alert (all live inside .nb-phone__screen)
+   -------------------------------------------------------------------------- */
+.nb-scrim { position: absolute; inset: 0; z-index: 200; background: var(--nb-app-scrim); }
+.nb-sheet {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 201; max-height: calc(100% - 56px);
+  display: flex; flex-direction: column;
+  border-radius: var(--nb-radius-card) var(--nb-radius-card) 0 0;
+  background: var(--nb-app-sheet);
+  border: 1px solid; border-bottom: 0; border-color: var(--nb-glass-border-color);
+  box-shadow: 0 -10px 40px rgba(0,0,0,.4);
+}
+.nb-sheet::before { content: ""; flex: none; width: 36px; height: 5px; margin: 6px auto 0; border-radius: 3px; background: rgba(255,255,255,.25); }
+.nb-sheet__head {
+  position: relative; flex: none; min-height: 44px; padding: var(--nb-space-2) var(--nb-space-4) var(--nb-space-1-5);
+  display: flex; align-items: center; justify-content: space-between; color: var(--nb-app-accent); font-weight: var(--nb-weight-semibold);
+}
+.nb-sheet__title { position: absolute; left: 80px; right: 80px; text-align: center; color: var(--nb-text); font-weight: var(--nb-weight-bold); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nb-sheet__body { overflow-y: auto; padding: var(--nb-space-1) var(--nb-space-4) var(--nb-space-10); }
+
+.nb-actions { position: absolute; left: var(--nb-space-2); right: var(--nb-space-2); bottom: 30px; z-index: 201; display: flex; flex-direction: column; gap: var(--nb-space-2); }
+.nb-actions__group {
+  overflow: hidden; border-radius: var(--nb-radius-tile-lg);
+  background: var(--nb-glass); border: 1px solid; border-color: var(--nb-glass-border-color);
+  -webkit-backdrop-filter: blur(30px); backdrop-filter: blur(30px);
+}
+.nb-actions__head { padding: var(--nb-space-3-5) var(--nb-space-4); text-align: center; font-size: var(--nb-text-md); color: var(--nb-text-muted); line-height: 1.3; }
+.nb-actions__head b { display: block; color: var(--nb-text-body); }
+.nb-actions__btn {
+  appearance: none; width: 100%; height: 54px; border: 0; border-top: 1px solid var(--nb-app-sep); background: none; cursor: pointer;
+  font: inherit; font-size: var(--nb-text-xl); font-weight: var(--nb-weight-semibold); color: var(--nb-app-accent);
+}
+.nb-actions__group > .nb-actions__btn:first-child { border-top: 0; }
+.nb-actions__btn--destructive { color: var(--nb-red-accent); }
+.nb-actions__btn--cancel { font-weight: var(--nb-weight-bold); }
+
+.nb-alert {
+  position: absolute; left: 50%; top: 50%; z-index: 301; width: 270px; translate: -50% -50%;
+  overflow: hidden; text-align: center; border-radius: var(--nb-radius-tile-lg);
+  background: var(--nb-glass); border: 1px solid; border-color: var(--nb-glass-border-color);
+  -webkit-backdrop-filter: blur(30px) saturate(1.6); backdrop-filter: blur(30px) saturate(1.6);
+  box-shadow: var(--nb-shadow-glass);
+}
+.nb-alert__body { padding: 19px var(--nb-space-4) 15px; }
+.nb-alert__title { font-size: var(--nb-text-xl); font-weight: var(--nb-weight-bold); margin-bottom: var(--nb-space-1); }
+.nb-alert__msg { font-size: var(--nb-text-md); line-height: var(--nb-leading-body); color: var(--nb-text-body); }
+.nb-alert__btns { display: flex; border-top: 1px solid rgba(255,255,255,.12); }
+.nb-alert__btns > button {
+  appearance: none; flex: 1; height: 44px; border: 0; background: none; cursor: pointer;
+  font: inherit; font-size: var(--nb-text-xl); font-weight: var(--nb-weight-semibold); color: var(--nb-app-accent);
+}
+.nb-alert__btns > button + button { border-left: 1px solid rgba(255,255,255,.12); font-weight: var(--nb-weight-bold); }
+.nb-alert__btns > .is-destructive { color: var(--nb-red-accent); }
+
+/* --------------------------------------------------------------------------
+   29. Avatar — round tile with initials or photo
+   -------------------------------------------------------------------------- */
+.nb-avatar {
+  --nb-avatar-size: 40px;
+  flex: none; position: relative; overflow: hidden;
+  width: var(--nb-avatar-size); height: var(--nb-avatar-size); border-radius: 50%;
+  display: inline-grid; place-items: center;
+  background: var(--nb-tile-bg, var(--nb-grad-neutral)) center / cover;
+  box-shadow: var(--nb-inset-highlight-soft);
+  font-size: calc(var(--nb-avatar-size) * .38); font-weight: var(--nb-weight-bold); color: var(--nb-text); text-shadow: var(--nb-shadow-glyph);
+}
+.nb-avatar--sm { --nb-avatar-size: 30px; } .nb-avatar--lg { --nb-avatar-size: 56px; } .nb-avatar--xl { --nb-avatar-size: 96px; }
+.nb-avatar > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* tint an avatar like a tile: <span class="nb-avatar nb-tile--lilac">… (only the --nb-tile-bg var is used) */
+
+/* --------------------------------------------------------------------------
+   30. Message bubbles + composer
+   -------------------------------------------------------------------------- */
+.nb-thread { display: flex; flex-direction: column; gap: 3px; }
+.nb-thread__day { align-self: center; margin: var(--nb-space-2-5) 0 var(--nb-space-1-5); font-size: var(--nb-text-xs); font-weight: var(--nb-weight-bold); color: var(--nb-text-subtle); }
+.nb-bubble {
+  max-width: 76%; padding: 8px 13px; border-radius: 19px;
+  font-size: var(--nb-text-lg); line-height: 1.3; overflow-wrap: anywhere;
+}
+.nb-bubble--in  { align-self: flex-start; background: rgba(255,255,255,.13); border-bottom-left-radius: 6px; }
+.nb-bubble--out { align-self: flex-end; background: var(--nb-app-accent); color: var(--nb-app-bg); border-bottom-right-radius: 6px; }
+.nb-bubble--out.nb-bubble--on-dark { color: var(--nb-text); }
+.nb-bubble--media { padding: 3px; overflow: hidden; }
+.nb-bubble--media img { display: block; width: 100%; border-radius: 16px; }
+.nb-bubble__meta { align-self: flex-end; font-size: var(--nb-text-2xs); color: var(--nb-text-subtle); margin: 1px 4px 6px; }
+.nb-composer {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 20;
+  display: flex; align-items: flex-end; gap: var(--nb-space-2); padding: var(--nb-space-2) var(--nb-space-3) var(--nb-home-h);
+  background: var(--nb-app-bar); -webkit-backdrop-filter: blur(var(--nb-blur-glass)); backdrop-filter: blur(var(--nb-blur-glass));
+  border-top: 1px solid var(--nb-app-sep);
+}
+.nb-composer__input { flex: 1; min-height: 36px; padding: 8px 14px; border-radius: 18px; border: 1px solid rgba(255,255,255,.14); font-size: var(--nb-text-lg); color: var(--nb-text-subtle); }
+.nb-composer__send { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--nb-app-accent); color: var(--nb-app-bg); }
+
+/* --------------------------------------------------------------------------
+   31. Dynamic Island + Live Activity
+   compact:  <div class="nb-island"><span class="nb-island__lead nb-tile nb-tile--xs nb-tile--green"><i class="fa-solid fa-phone"></i></span><span class="nb-island__text">02:14</span></div>
+   expanded: add .is-expanded and use __title/__sub/__actions
+   -------------------------------------------------------------------------- */
+.nb-island {
+  position: absolute; top: 11px; left: 50%; translate: -50% 0; z-index: 450;
+  min-width: 120px; height: 34px; padding: 0 var(--nb-space-3) 0 5px; border-radius: 17px;
+  display: flex; align-items: center; gap: var(--nb-space-2);
+  background: var(--nb-island-bg); color: var(--nb-text);
+  font-size: var(--nb-text-sm); font-weight: var(--nb-weight-bold); font-variant-numeric: tabular-nums;
+  transition: width var(--nb-dur-base) var(--nb-ease-sheet), height var(--nb-dur-base) var(--nb-ease-sheet), border-radius var(--nb-dur-base);
+}
+.nb-island:empty { width: 120px; padding: 0; }   /* idle pill */
+.nb-island__lead { --nb-tile-size: 24px; --nb-tile-radius: 12px; --nb-tile-glyph: 11px; }
+.nb-island__text { flex: 1; min-width: 0; text-align: right; white-space: nowrap; color: var(--nb-accent, var(--nb-text)); }
+.nb-island.is-expanded {
+  left: var(--nb-space-2-5); right: var(--nb-space-2-5); translate: none; height: auto;
+  padding: var(--nb-space-3) var(--nb-space-3-5); border-radius: 30px; gap: var(--nb-space-3);
+}
+.nb-island.is-expanded .nb-island__lead { --nb-tile-size: 44px; --nb-tile-radius: 22px; --nb-tile-glyph: 18px; }
+.nb-island__main { flex: 1; min-width: 0; }
+.nb-island__title { font-size: var(--nb-text-lg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nb-island__sub { margin-top: 2px; font-size: var(--nb-text-sm); font-weight: var(--nb-weight-semibold); color: var(--nb-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nb-island__progress { margin-top: var(--nb-space-2); height: 4px; border-radius: 2px; background: var(--nb-glass-track); overflow: hidden; }
+.nb-island__progress > i { display: block; height: 100%; width: calc(var(--nb-progress, 0) * 1%); border-radius: inherit; background: var(--nb-accent, var(--nb-text)); }
+.nb-island__actions { flex: none; display: flex; gap: var(--nb-space-2-5); }
+.nb-island__actions > .nb-round { --nb-round-size: 44px; }
+
+/* round button (island actions, call screen, CC connectivity) */
+.nb-round {
+  --nb-round-size: 64px;
+  appearance: none; flex: none; cursor: pointer;
+  width: var(--nb-round-size); height: var(--nb-round-size); border-radius: 50%; border: 0;
+  display: inline-grid; place-items: center;
+  background: rgba(255,255,255,.16); color: var(--nb-text);
+  font-size: calc(var(--nb-round-size) * .38);
+  transition: background var(--nb-dur-base), color var(--nb-dur-base);
+}
+.nb-round.is-on      { background: rgba(255,255,255,.92); color: var(--nb-text-on-light); }
+.nb-round--accept    { background: linear-gradient(180deg, var(--nb-green-top), var(--nb-green-bot)); box-shadow: var(--nb-inset-highlight); }
+.nb-round--decline   { background: linear-gradient(180deg, var(--nb-red-top), var(--nb-red-bot)); box-shadow: var(--nb-inset-highlight); }
+.nb-round--sm { --nb-round-size: 34px; } .nb-round--md { --nb-round-size: 50px; }
+
+/* --------------------------------------------------------------------------
+   32. Control Center (pull from status bar right)
+   -------------------------------------------------------------------------- */
+.nb-cc {
+  position: absolute; inset: 0; z-index: 350; padding: 62px var(--nb-space-5) 0;
+  background: rgba(0,0,0,.25);
+  -webkit-backdrop-filter: blur(26px) brightness(.6) saturate(1.2); backdrop-filter: blur(26px) brightness(.6) saturate(1.2);
+}
+.nb-cc__grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-auto-rows: 68px; gap: 13px; }
+.nb-cc__module {           /* glass block; 1×1 default */
+  display: grid; place-items: center; border-radius: var(--nb-radius-card);
+  background: var(--nb-glass); border: 1px solid; border-color: var(--nb-glass-border-color);
+  font-size: 21px; color: var(--nb-text);
+}
+.nb-cc__module--2x2 { grid-column: span 2; grid-row: span 2; padding: var(--nb-space-3); }
+.nb-cc__module--wide { grid-column: span 2; display: flex; justify-content: flex-start; gap: var(--nb-space-2); padding: 0 var(--nb-space-2-5); font-size: var(--nb-text-md); line-height: 1.2; }
+.nb-cc__module--wide small { display: block; font-size: var(--nb-text-xs); color: var(--nb-text-muted); }
+.nb-cc__module.is-on { background: rgba(255,255,255,.92); color: var(--nb-text-on-light); }
+.nb-cc__conn { display: grid; grid-template-columns: 1fr 1fr; place-items: center; gap: var(--nb-space-3); width: 100%; height: 100%; }
+.nb-cc__conn > .nb-round { --nb-round-size: 50px; }
+.nb-cc__conn > .nb-round.is-on { background: var(--nb-round-on, var(--nb-blue-mid)); color: var(--nb-text); }
+.nb-cc__vslider {          /* vertical fill slider: --nb-value 0..100 */
+  grid-row: span 2; position: relative; overflow: hidden; isolation: isolate;
+  display: flex; align-items: flex-end; justify-content: center; padding-bottom: var(--nb-space-3-5);
+  border-radius: var(--nb-radius-card);
+  background: var(--nb-glass); border: 1px solid; border-color: var(--nb-glass-border-color);
+  font-size: 18px; color: var(--nb-text-on-light);
+}
+.nb-cc__vslider::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; z-index: -1; height: calc(var(--nb-value, 50) * 1%); background: rgba(255,255,255,.92); }
+
+/* --------------------------------------------------------------------------
+   33. Widgets (home widget page, lock-screen circles)
+   -------------------------------------------------------------------------- */
+.nb-widgets { position: absolute; top: 70px; left: 22px; right: 22px; z-index: 2; display: grid; grid-template-columns: 1fr 1fr; gap: var(--nb-space-4); }
+.nb-widget { padding: var(--nb-space-3-5); border-radius: 22px; font-size: var(--nb-text-md); min-height: 150px; }
+.nb-widget--wide { grid-column: span 2; min-height: 0; }
+.nb-widget__head { display: flex; align-items: center; gap: var(--nb-space-1-5); font-size: var(--nb-text-xs); font-weight: var(--nb-weight-bold); letter-spacing: var(--nb-tracking-caps); text-transform: uppercase; color: var(--nb-text-body); }
+.nb-widget__big { margin: 4px 0; font-size: 40px; font-weight: var(--nb-weight-medium); line-height: 1; font-variant-numeric: tabular-nums; }
+.nb-widget__row { display: flex; justify-content: space-between; margin-top: 7px; }
+.nb-widget__event { margin-top: var(--nb-space-2); padding-left: 7px; border-left: 3px solid var(--nb-accent, var(--nb-orange-accent)); line-height: 1.25; }
+.nb-lock-widgets { position: absolute; top: 192px; left: 0; right: 0; z-index: 2; display: flex; justify-content: center; gap: var(--nb-space-2-5); }
+.nb-lock-widget { width: 70px; height: 70px; border-radius: 50%; display: grid; place-items: center; text-align: center; font-size: var(--nb-text-xs); line-height: 1.2; }
+.nb-lock-widget b { display: block; font-size: var(--nb-text-xl); }
+
+/* --------------------------------------------------------------------------
+   34. Keypad (passcode + dialer) and passcode dots
+   -------------------------------------------------------------------------- */
+.nb-keypad { display: grid; grid-template-columns: repeat(3, 76px); gap: var(--nb-space-4) var(--nb-space-6); justify-content: center; }
+.nb-keypad__key {
+  appearance: none; width: 76px; height: 76px; border-radius: 50%; border: 0; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.16); color: var(--nb-text);
+  font: inherit; font-size: 32px; font-weight: var(--nb-weight-medium); line-height: 1;
+}
+.nb-keypad__key small { margin-top: 2px; font-size: 9.5px; font-weight: var(--nb-weight-bold); letter-spacing: 2px; }
+.nb-keypad__key:active { background: rgba(255,255,255,.42); }
+.nb-keypad__key--call { background: linear-gradient(180deg, var(--nb-green-top), var(--nb-green-bot)); box-shadow: var(--nb-inset-highlight); font-size: 28px; }
+.nb-keypad__key--ghost { background: none; font-size: 22px; }
+.nb-pin { display: flex; justify-content: center; gap: 22px; margin: 22px 0 46px; }
+.nb-pin > i { width: 13px; height: 13px; border-radius: 50%; border: 1.5px solid var(--nb-text); }
+.nb-pin > i.is-on { background: var(--nb-text); }
+.nb-pin.is-error { animation: nb-shake 360ms var(--nb-ease-standard); }
+.nb-dial { text-align: center; font-size: 34px; font-weight: var(--nb-weight-medium); letter-spacing: 1px; min-height: 44px; margin: 60px 0 26px; font-variant-numeric: tabular-nums; }
+
+/* --------------------------------------------------------------------------
+   35. Call screen (over the blurred wallpaper)
+   -------------------------------------------------------------------------- */
+.nb-call { position: absolute; inset: 0; z-index: 4; display: flex; flex-direction: column; align-items: center; padding: 96px var(--nb-space-6) 70px; }
+.nb-call::before { content: ""; position: absolute; inset: -30px; z-index: -1; background: var(--nb-wallpaper); filter: blur(30px) brightness(.45); }
+.nb-call__name { margin-top: var(--nb-space-4); font-size: 30px; font-weight: var(--nb-weight-bold); }
+.nb-call__state { margin-top: var(--nb-space-1); font-size: var(--nb-text-lg); color: var(--nb-text-muted); font-variant-numeric: tabular-nums; }
+.nb-call__grid { margin-top: auto; display: grid; grid-template-columns: repeat(3, 72px); gap: var(--nb-space-5) 26px; text-align: center; font-size: var(--nb-text-xs); color: var(--nb-text-body); }
+.nb-call__grid .nb-round { --nb-round-size: 72px; margin-bottom: var(--nb-space-1-5); }
+.nb-call__end { margin-top: 34px; display: flex; gap: 90px; }
+.nb-call__end .nb-round { --nb-round-size: 72px; }
+
+/* --------------------------------------------------------------------------
+   36. FAB, empty state, spinner
+   -------------------------------------------------------------------------- */
+.nb-fab {
+  position: absolute; right: var(--nb-space-4-5); bottom: 104px; z-index: 31;
+  width: 54px; height: 54px; border-radius: 50%; border: 0; cursor: pointer;
+  display: grid; place-items: center; font-size: 20px;
+  background: var(--nb-tile-bg, var(--nb-grad-neutral)); color: var(--nb-text); text-shadow: var(--nb-shadow-glyph);
+  box-shadow: var(--nb-shadow-tile), 0 8px 20px rgba(0,0,0,.45);
+}
+.nb-empty { display: flex; flex-direction: column; align-items: center; gap: var(--nb-space-2); padding: 60px 30px; text-align: center; color: var(--nb-text-muted); }
+.nb-empty > .nb-tile { margin-bottom: var(--nb-space-2); }
+.nb-empty b { font-size: 19px; color: var(--nb-text); }
+.nb-empty p { margin: 0; font-size: var(--nb-text-base); line-height: 1.4; }
+.nb-spinner { display: inline-block; width: 22px; height: 22px; border-radius: 50%; border: 2.5px solid rgba(255,255,255,.18); border-top-color: rgba(255,255,255,.85); animation: nb-spin .8s linear infinite; }
+
+/* --------------------------------------------------------------------------
+   37. App open / close + home edit
+   App zoom: scale from the icon rect with --nb-ease-sheet (~380ms). In CEF give the
+   scaled layer will-change: transform and clip it with clip-path (not overflow + radius)
+   or a light wedge leaks in a corner from backdrop-filter layers behind it.
+   -------------------------------------------------------------------------- */
+.nb-app-layer { position: absolute; inset: 0; z-index: 200; contain: layout paint; isolation: isolate; will-change: transform, opacity; backface-visibility: hidden; clip-path: inset(0 round var(--nb-radius-screen)); }
+.nb-jiggle { animation: nb-jiggle .28s ease-in-out infinite alternate; }
+.nb-phone__grid > :nth-child(2n).nb-jiggle { animation-delay: -.14s; animation-duration: .3s; }
+
+@keyframes nb-spin   { to { rotate: 360deg; } }
+@keyframes nb-shake  { 0%, 100% { translate: 0; } 20%, 60% { translate: -9px; } 40%, 80% { translate: 9px; } }
+@keyframes nb-jiggle { from { rotate: -1.6deg; } to { rotate: 1.6deg; } }
+@keyframes nb-sheet-in { from { translate: 0 100%; } to { translate: 0 0; } }
+.nb-sheet { animation: nb-sheet-in 420ms var(--nb-ease-sheet) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nb-sheet, .nb-jiggle, .nb-pin.is-error { animation: none; }
+  .nb-switch, .nb-switch::after, .nb-island { transition-duration: 1ms; }
+}
