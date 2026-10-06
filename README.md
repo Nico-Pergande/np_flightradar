@@ -4,7 +4,8 @@ A server-authoritative flight radar for FiveM. Pilots see the traffic around the
 the ground or from a tower console, and anyone with a scanner item or the phone app can follow air traffic live.
 It covers transponders with squawk codes and callsigns, emergency squawks (7500 / 7600 / 7700) that alert the right
 jobs, primary radar for aircraft with the transponder off, and TCAS-style traffic and resolution advisories for pilots.
-The panel uses the **Nimbus UI** look: frosted glass, glossy squircle tiles and Quicksand type.
+The panel uses the **Nimbus UI** look: frosted glass, glossy squircle tiles and Quicksand type. It follows the server
+theme (brand colour, strength, frosted/liquid material) set in np_admin (Settings -> np_admin -> Theme).
 
 Built for **es_extended** + **np_inventory** first. **qbx_core** / **qb-core** and standalone servers work through the
 bridge. Every `np_*` sibling is optional.

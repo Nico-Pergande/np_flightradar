@@ -1,0 +1,167 @@
+/* ==========================================================================
+   Nimbus UI · Liquid material (optional)
+   An iOS 26/27 "Liquid Glass" take on the Nimbus surfaces. OFF by default:
+   loading this file changes nothing until the root opts in.
+
+     <body class="nb-ui" data-nb-material="liquid">      (or NimbusTheme.material('liquid'))
+
+   What changes: floating surfaces get thinner, more saturated glass with a
+   specular sheen and a brighter lit top edge; controls become capsules,
+   bars float inset from the edges, radii grow a step.
+   What does NOT change (the six principles still hold):
+     · surfaces stay grey glass (dark-based tint, legible over the game world)
+     · colour only on tiles / semantic states; brand rules from theme.css
+     · light from above — edges bright on top, faint sides, ~invisible bottom.
+       No inset bottom/right rim, the sheen fades out before the bottom edge.
+     · app screens stay dark grey with solid lit-edge cards; liquid is for
+       things that float (HUD panels, toasts, bars, sheets, CC, dock, keys).
+   Load after components.css + phone-kit.css (+ theme.css).
+   ========================================================================== */
+
+[data-nb-material="liquid"] {
+  --nb-liquid-tint:   linear-gradient(180deg, rgba(92,92,98,.34), rgba(34,34,38,.46));
+  --nb-liquid-tint-strong: linear-gradient(180deg, rgba(60,60,64,.62), rgba(26,26,28,.72)); /* sheets, text entry, bright backdrops */
+  --nb-liquid-sheen:  linear-gradient(145deg, rgba(255,255,255,.20) 0%, rgba(255,255,255,.05) 36%, rgba(255,255,255,0) 62%);
+  --nb-liquid:        var(--nb-liquid-sheen), var(--nb-liquid-tint);
+  --nb-liquid-filter: blur(10px) saturate(1.9) brightness(1.08);
+  --nb-liquid-edge:   rgba(255,255,255,.36) rgba(255,255,255,.13) rgba(255,255,255,.03); /* top · sides · bottom */
+  --nb-liquid-edge-soft: rgba(255,255,255,.24) rgba(255,255,255,.09) rgba(255,255,255,.02);
+  --nb-liquid-shadow: inset 0 1px 0 rgba(255,255,255,.32), inset 0 0 14px rgba(255,255,255,.06), 0 10px 30px rgba(0,0,0,.32);
+  --nb-liquid-lens:   rgba(255,255,255,.13);  /* selected tab / segment */
+  --nb-liquid-fill:   var(--nb-liquid-sheen), rgba(255,255,255,.12); /* glass controls on solid app bg */
+
+  /* re-point the frosted tokens so every glass consumer follows */
+  --nb-glass: var(--nb-liquid);
+  --nb-glass-border-color: var(--nb-liquid-edge);
+  --nb-shadow-glass: var(--nb-liquid-shadow);
+  --nb-blur-glass: 10px;
+  --nb-saturate-glass: 1.9;
+  --nb-glass-btn: var(--nb-liquid-sheen), linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.08));
+  --nb-edge-lit-soft: var(--nb-liquid-edge-soft);
+  --nb-app-bar: rgba(22,22,26,.55);
+  --nb-app-sheet: var(--nb-liquid-sheen), var(--nb-liquid-tint-strong);
+
+  /* one step rounder */
+  --nb-radius-tile-sm: 10px;
+  --nb-radius-tile: 13px;
+  --nb-radius-tile-lg: 16px;
+  --nb-radius-tile-xl: 17px;
+  --nb-radius-card: 24px;
+  --nb-radius-panel: 28px;
+  --nb-radius-map: 30px;
+  --nb-radius-panel-lg: 32px;
+
+  /* tiles: brighter specular top + soft top-left glint, same no-bottom-rim rule */
+  --nb-shadow-tile: inset 0 1.5px 0 rgba(255,255,255,.62), inset 1px 0 0 rgba(255,255,255,.14), inset 0 -2px 4px rgba(0,0,0,.18), 0 5px 12px rgba(0,0,0,.32);
+}
+
+/* brand strength "glass": hue the liquid tint too (vars from nimbus-theme.js) */
+[data-nb-material="liquid"][data-nb-strength="glass"] {
+  --nb-liquid-tint: linear-gradient(180deg, var(--nb-brand-liquid-top, rgba(92,92,98,.34)), var(--nb-brand-liquid-bot, rgba(34,34,38,.46)));
+  --nb-liquid-edge: var(--nb-brand-glass-edge, rgba(255,255,255,.36)) rgba(255,255,255,.13) rgba(255,255,255,.03);
+  --nb-glass: var(--nb-liquid);                       /* theme.css sets these at the same specificity; */
+  --nb-glass-border-color: var(--nb-liquid-edge);     /* liquid.css loads after it, so these win      */
+}
+
+/* ---------------- core surfaces (components.css) ---------------- */
+[data-nb-material="liquid"] .nb-glass {
+  -webkit-backdrop-filter: var(--nb-liquid-filter); backdrop-filter: var(--nb-liquid-filter);
+}
+[data-nb-material="liquid"] .nb-glass--pill { border-radius: var(--nb-radius-round); }
+[data-nb-material="liquid"] .nb-glass--danger { background: var(--nb-liquid-sheen), var(--nb-glass-danger); }
+[data-nb-material="liquid"] .nb-glass--call   { background: var(--nb-liquid-sheen), var(--nb-glass-call); }
+[data-nb-material="liquid"] .nb-tile::after { opacity: .85; }     /* gloss slightly softer, the sheen does the work */
+[data-nb-material="liquid"] .nb-btn { border-radius: var(--nb-radius-round); }
+[data-nb-material="liquid"] .nb-btn--primary,
+[data-nb-material="liquid"] .nb-btn--success { box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 4px 12px rgba(0,0,0,.25); }
+
+/* home screen dock: floating capsule */
+[data-nb-material="liquid"] .nb-phone__dock {
+  border-radius: 36px;
+  background: var(--nb-liquid); border: 1px solid; border-color: var(--nb-liquid-edge);
+  -webkit-backdrop-filter: var(--nb-liquid-filter); backdrop-filter: var(--nb-liquid-filter);
+  box-shadow: var(--nb-liquid-shadow);
+}
+
+/* ---------------- phone kit (phone-kit.css) ---------------- */
+/* nav bar actions: monochrome glass capsules */
+[data-nb-material="liquid"] .nb-navbar__back,
+[data-nb-material="liquid"] .nb-navbar__action {
+  min-width: 38px; height: 38px; padding: 0 var(--nb-space-3); justify-content: center;
+  border-radius: var(--nb-radius-round); color: var(--nb-text);
+  background: var(--nb-liquid-fill); border: 1px solid; border-color: var(--nb-liquid-edge-soft);
+  -webkit-backdrop-filter: var(--nb-liquid-filter); backdrop-filter: var(--nb-liquid-filter);
+}
+[data-nb-material="liquid"] .nb-navbar__title { left: 96px; right: 96px; }
+
+/* capsule fields and controls */
+[data-nb-material="liquid"] .nb-search { height: 40px; border-radius: var(--nb-radius-round); background: var(--nb-liquid-fill); }
+[data-nb-material="liquid"] .nb-field__box { border-radius: 18px; }
+[data-nb-material="liquid"] .nb-list:not(.nb-list--plain) { border-radius: 22px; }
+[data-nb-material="liquid"] .nb-segmented,
+[data-nb-material="liquid"] .nb-segmented > button { border-radius: var(--nb-radius-round); }
+[data-nb-material="liquid"] .nb-segmented > .is-on { background: var(--nb-liquid-sheen), var(--nb-liquid-lens); box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 3px 8px rgba(0,0,0,.18); }
+[data-nb-material="liquid"] .nb-filter:not(.is-on) { background: var(--nb-liquid-fill); box-shadow: inset 0 1px 0 rgba(255,255,255,.22); }
+[data-nb-material="liquid"] .nb-btn--tinted { background: var(--nb-liquid-fill); box-shadow: inset 0 1px 0 rgba(255,255,255,.22); }
+[data-nb-material="liquid"] .nb-btn--fill   { box-shadow: inset 0 1px 0 rgba(255,255,255,.4); }
+[data-nb-material="liquid"] .nb-btn--lg { border-radius: 25px; }
+[data-nb-material="liquid"] .nb-slider__knob { width: 34px; border-radius: 13px; box-shadow: inset 0 1px 0 #fff, 0 3px 8px rgba(0,0,0,.3); }
+
+/* tab bar: floating capsule with a glass lens behind the active tab */
+[data-nb-material="liquid"] .nb-tabbar {
+  left: 16px; right: 16px; bottom: 20px; height: 62px; padding: 5px;
+  justify-content: space-between; align-items: stretch;
+  border: 1px solid; border-color: var(--nb-liquid-edge); border-radius: var(--nb-radius-round);
+  background: var(--nb-liquid-sheen), var(--nb-app-bar);
+  -webkit-backdrop-filter: var(--nb-liquid-filter); backdrop-filter: var(--nb-liquid-filter);
+  box-shadow: var(--nb-liquid-shadow);
+}
+[data-nb-material="liquid"] .nb-tab { flex: 1; width: auto; justify-content: center; gap: 3px; border-radius: var(--nb-radius-round); color: var(--nb-text-body); }
+[data-nb-material="liquid"] .nb-tab.is-on { background: var(--nb-liquid-lens); box-shadow: inset 0 1px 0 rgba(255,255,255,.25); color: var(--nb-app-accent); }
+[data-nb-material="liquid"] .nb-tab__badge { left: auto; right: calc(50% - 22px); }
+[data-nb-material="liquid"] .nb-fab { bottom: 96px; box-shadow: var(--nb-shadow-tile), 0 8px 20px rgba(0,0,0,.45); }
+
+/* floating sheets, action sheets, alerts */
+[data-nb-material="liquid"] .nb-sheet {
+  left: 8px; right: 8px; bottom: 8px; border-radius: 40px; border-bottom: 1px solid;
+  -webkit-backdrop-filter: var(--nb-liquid-filter); backdrop-filter: var(--nb-liquid-filter);
+  box-shadow: var(--nb-liquid-shadow);
+}
+[data-nb-material="liquid"] .nb-sheet__title { left: 96px; right: 96px; }
+[data-nb-material="liquid"] .nb-actions__group { border-radius: 28px; -webkit-backdrop-filter: var(--nb-liquid-filter); backdrop-filter: var(--nb-liquid-filter); box-shadow: var(--nb-liquid-shadow); }
+[data-nb-material="liquid"] .nb-alert { width: 284px; border-radius: 32px; -webkit-backdrop-filter: var(--nb-liquid-filter); backdrop-filter: var(--nb-liquid-filter); }
+[data-nb-material="liquid"] .nb-alert__btns { border-top: 0; gap: var(--nb-space-2); padding: 0 var(--nb-space-3-5) var(--nb-space-3-5); }
+[data-nb-material="liquid"] .nb-alert__btns > button { border-radius: 22px; background: var(--nb-liquid-fill); }
+[data-nb-material="liquid"] .nb-alert__btns > button + button { border-left: 0; }
+
+/* composer */
+[data-nb-material="liquid"] .nb-composer__input { border: 1px solid; border-color: var(--nb-liquid-edge-soft); background: var(--nb-liquid-fill); }
+[data-nb-material="liquid"] .nb-composer__send { box-shadow: inset 0 1px 0 rgba(255,255,255,.4); }
+
+/* round buttons + keypad: glass circles (accept/decline/on keep their colour) */
+[data-nb-material="liquid"] .nb-round:not(.is-on, .nb-round--accept, .nb-round--decline),
+[data-nb-material="liquid"] .nb-keypad__key:not(.nb-keypad__key--call, .nb-keypad__key--ghost) {
+  background: var(--nb-liquid-fill);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.34), inset 0 0 12px rgba(255,255,255,.05);
+  -webkit-backdrop-filter: var(--nb-liquid-filter); backdrop-filter: var(--nb-liquid-filter);
+}
+[data-nb-material="liquid"] .nb-keypad__key:active { background: var(--nb-liquid-sheen), rgba(255,255,255,.34); }
+[data-nb-material="liquid"] .nb-round--accept,
+[data-nb-material="liquid"] .nb-round--decline,
+[data-nb-material="liquid"] .nb-keypad__key--call { box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 6px 16px rgba(0,0,0,.28); }
+
+/* Control Center: lighter backdrop, round 1×1 modules, rounder blocks */
+[data-nb-material="liquid"] .nb-cc { background: rgba(0,0,0,.12); -webkit-backdrop-filter: blur(18px) brightness(.75) saturate(1.5); backdrop-filter: blur(18px) brightness(.75) saturate(1.5); }
+[data-nb-material="liquid"] .nb-cc__module,
+[data-nb-material="liquid"] .nb-cc__vslider { box-shadow: var(--nb-liquid-shadow); -webkit-backdrop-filter: var(--nb-liquid-filter); backdrop-filter: var(--nb-liquid-filter); }
+[data-nb-material="liquid"] .nb-cc__module:not(.nb-cc__module--2x2) { border-radius: var(--nb-radius-round); }
+[data-nb-material="liquid"] .nb-cc__module--2x2,
+[data-nb-material="liquid"] .nb-cc__vslider { border-radius: 32px; }
+
+/* widgets */
+[data-nb-material="liquid"] .nb-widget { border-radius: 26px; }
+
+/* accessibility: users who ask for less transparency get the solid tint */
+@media (prefers-reduced-transparency: reduce) {
+  [data-nb-material="liquid"] { --nb-liquid-tint: var(--nb-liquid-tint-strong); --nb-app-bar: rgba(20,20,21,.9); }
+}

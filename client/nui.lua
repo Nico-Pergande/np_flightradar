@@ -74,6 +74,8 @@ local function show(sub)
       },
     })
     if not wasOpen then
+      -- no ready callback: re-send the server theme (np_admin) in case the start-up sends beat the page
+      if npAdmin then npAdmin.sendTheme() end
       setFocus(focus)
       NpFR.Client.claimZones(true)
     end
