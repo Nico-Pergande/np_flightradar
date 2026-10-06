@@ -264,7 +264,7 @@ This runs `luac -p` on every Lua file, followed by the unit tests for `shared/ra
 It also runs server and client smoke tests against stubbed natives (`tests/harness.lua`): registry add/remove, no
 ghosts, range filter, own vehicle excluded, primary radar, transponder seat checks, rate limits, emergencies, an idle
 loop without subscribers, and the client blip/panel/TCAS flow. `tests/test_np_admin.lua` covers the np_admin
-integration against a fake np_admin: `NpAdmin.can` delegation and the fallback, node / settings / action
+integration against a fake np_admin: `npAdmin.can` delegation and the fallback, node / settings / action
 registration, the settings schema, live settings and the emergency log. It needs Lua 5.4 (`lua`, `luac`).
 
 To work on the UI in a browser without the game, open `html/index.html?dev=1`. This mock mode feeds simulated traffic.

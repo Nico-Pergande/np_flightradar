@@ -1,6 +1,6 @@
 -- Server framework bridge (esx > qbx > qb > standalone). Every framework call is pcall'd: a framework
 -- that is restarting or different from what we expect degrades to "no job", never to an error inside a
--- net event. No ACE anywhere: permissions are np_admin nodes (NpAdmin.can, see Bridge.can below).
+-- net event. No ACE anywhere: permissions are np_admin nodes (npAdmin.can, see Bridge.can below).
 Bridge = {}
 
 local fw = nil
@@ -128,13 +128,13 @@ Bridge.configAdmin = configAdmin
 
 -- Without np_admin: the lib's fallback (console, convar np_admin_fallback, ESX groups in
 -- np_admin_fallback_groups) or Config.Admin. With np_admin running, np_admin alone decides.
-NpAdmin.fallback = function(src, node)
-  if NpAdmin.defaultFallback(src, node) then return true end
+npAdmin.fallback = function(src, node)
+  if npAdmin.defaultFallback(src, node) then return true end
   return configAdmin(src)
 end
 
 function Bridge.can(src, node)
-  return NpAdmin.can(src, node) == true
+  return npAdmin.can(src, node) == true
 end
 
 function Bridge.isAdmin(src)

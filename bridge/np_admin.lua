@@ -4,22 +4,22 @@
 -- your config. It never hard-depends on np_admin: when np_admin is not running every call falls back
 -- to safe defaults (no ACE is used anywhere).
 --
---   NpAdmin.can(src, 'np_inventory.give')             server: may this player do it?   client: NpAdmin.can('node')
---   NpAdmin.limit(src, 'ban.max_duration')            server: numeric/string limit of the player's groups
---   NpAdmin.isStaff(src)                              server/client
---   NpAdmin.permissions({ { node=, label=, category=, description= }, ... })   register your nodes (server)
---   NpAdmin.settings({ label=, icon=, tint=, target=Config, categories={}, fields={...} })   (server + client)
---   NpAdmin.onChange(key | '*', function(value, old, key) end)                  (server + client)
---   NpAdmin.log(category, { action=, message=, actor=src, target=src, data={} })  (server)
---   NpAdmin.action({ name=, label=, icon=, perm=, target='player'|'none', args={...}, handler=fn(src, target, args) })  (server)
---   NpAdmin.notifyStaff({ title=, message=, icon=, tint= })                       (server)
---   NpAdmin.fallback = function(src, node) return bool end   -- override the no-np_admin behaviour
+--   npAdmin.can(src, 'np_inventory.give')             server: may this player do it?   client: npAdmin.can('node')
+--   npAdmin.limit(src, 'ban.max_duration')            server: numeric/string limit of the player's groups
+--   npAdmin.isStaff(src)                              server/client
+--   npAdmin.permissions({ { node=, label=, category=, description= }, ... })   register your nodes (server)
+--   npAdmin.settings({ label=, icon=, tint=, target=Config, categories={}, fields={...} })   (server + client)
+--   npAdmin.onChange(key | '*', function(value, old, key) end)                  (server + client)
+--   npAdmin.log(category, { action=, message=, actor=src, target=src, data={} })  (server)
+--   npAdmin.action({ name=, label=, icon=, perm=, target='player'|'none', args={...}, handler=fn(src, target, args) })  (server)
+--   npAdmin.notifyStaff({ title=, message=, icon=, tint= })                       (server)
+--   npAdmin.fallback = function(src, node) return bool end   -- override the no-np_admin behaviour
 --
 -- Fallback without np_admin (server): console (src 0) is allowed; identifiers listed in the convar
 -- `np_admin_fallback` ("license:abc,discord:123") are allowed; on es_extended the groups in
 -- `np_admin_fallback_groups` (default "admin,superadmin") are allowed. Everyone else is refused.
-NpAdmin = NpAdmin or {}
-local NA = NpAdmin
+npAdmin = npAdmin or {}
+local NA = npAdmin
 NA.LIB_VERSION = 1
 
 local RES = GetCurrentResourceName()
@@ -129,13 +129,13 @@ local function applyValues(values, fire)
   end
 end
 
-NA.NULL = setmetatable({}, { __tostring = function() return 'NpAdmin.NULL' end })
+NA.NULL = setmetatable({}, { __tostring = function() return 'npAdmin.NULL' end })
 
 -- Normalises a settings definition and remembers the defaults (read from target at register time).
 local function prepare(def)
-  assert(type(def) == 'table', 'NpAdmin.settings: definition table expected')
+  assert(type(def) == 'table', 'npAdmin.settings: definition table expected')
   def.target = def.target or Config
-  assert(type(def.target) == 'table', 'NpAdmin.settings: target table missing (pass target = Config)')
+  assert(type(def.target) == 'table', 'npAdmin.settings: target table missing (pass target = Config)')
   def.fields = def.fields or def.settings or {}
   def.__keys, def.__defaults = {}, {}
   for i = 1, #def.fields do

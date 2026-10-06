@@ -3,7 +3,7 @@
 -- bridge/server.lua). Nodes, staff tools and access refreshes when a player's np_admin groups change.
 local A, T = NpFR.Access, NpFR.Transponder
 
-NpAdmin.permissions({
+npAdmin.permissions({
   { node = 'np_flightradar.admin', label = 'Admin flight radar', category = 'Flight radar',
     description = 'Admin radar mode: every aircraft, unlimited range, primary radar (transponder off). Also the staff tools below.' },
   { node = 'np_flightradar.ground', label = 'Ground radar', category = 'Flight radar',
@@ -12,7 +12,7 @@ NpAdmin.permissions({
 
 -- ===== staff tools ("Resource tools" in np_admin) ===================================================
 
-NpAdmin.action({
+npAdmin.action({
   name = 'np_flightradar.open', label = 'Open admin flight radar', icon = 'satellite-dish', tint = 'blue',
   perm = 'np_flightradar.admin', target = 'none',
   description = 'Opens the flight radar panel in admin mode (every aircraft, primary radar).',
@@ -24,7 +24,7 @@ NpAdmin.action({
 
 local SQUAWK = '^[0-7][0-7][0-7][0-7]$'
 
-NpAdmin.action({
+npAdmin.action({
   name = 'np_flightradar.transponder', label = 'Set transponder', icon = 'tower-broadcast', tint = 'blue',
   perm = 'np_flightradar.admin', target = 'player',
   description = 'Sets squawk, callsign or transponder power of the aircraft the player sits in. Empty = unchanged.',

@@ -5,7 +5,7 @@
 -- shared keys reach the clients through GlobalState and apply on the next panel open / radar update.
 local m = 'm'
 
-NpAdmin.settings({
+npAdmin.settings({
   label = 'Flight radar', icon = 'plane-up', tint = 'blue',
   target = Config,
   categories = { 'General', 'Ranges', 'Traffic', 'Access', 'Transponder', 'Emergencies', 'TCAS', 'Blips' },
@@ -122,12 +122,12 @@ end
 if IsDuplicityVersion() then
   -- access-related change: re-resolve every player now instead of at the next 5 / 30 s recheck
   local ACCESS = { 'Ranges.', 'Access.', 'Identification.', 'PrimaryRadar.' }
-  NpAdmin.onChange('*', function(_, _, key)
+  npAdmin.onChange('*', function(_, _, key)
     if type(key) == 'string' and prefixed(key, ACCESS) and NpFR and NpFR.Access then NpFR.Access.invalidateAll() end
   end)
 else
   -- blip look changed: restyle every blip on the next radar update (the style cache only tracks colours)
-  NpAdmin.onChange('*', function(_, _, key)
+  npAdmin.onChange('*', function(_, _, key)
     if type(key) == 'string' and prefixed(key, { 'Blips.' }) and NpFR and NpFR.Blips then
       for _, b in pairs(NpFR.Blips.list) do b.style = nil end
     end
