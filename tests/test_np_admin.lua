@@ -1,4 +1,4 @@
--- np_admin integration: NpAdmin.can delegation + fallback, registered nodes / settings / actions, live
+-- np_admin integration: npAdmin.can delegation + fallback, registered nodes / settings / actions, live
 -- settings, log forwarding. A fake np_admin resource answers the lib's exports. Run from repo root.
 local H = dofile('tests/harness.lua')
 local ok = H.ok
@@ -72,7 +72,7 @@ do
     local why
     if seen[f.key] then why = 'duplicate' end
     seen[f.key] = true
-    if NpAdmin.getPath(Config, f.key) == nil and f.key ~= 'Emergency.discordChannel' then why = 'key missing in Config' end
+    if npAdmin.getPath(Config, f.key) == nil and f.key ~= 'Emergency.discordChannel' then why = 'key missing in Config' end
     if not TYPES[f.type] then why = 'type' end
     if f.apply ~= 'live' and f.apply ~= 'reload' and f.apply ~= 'restart' then why = 'apply' end
     if f.scope ~= 'shared' and f.scope ~= 'server' then why = 'scope' end
@@ -95,7 +95,7 @@ do
   ok(#bad == 0, 'schema valid ' .. table.concat(bad, ', '))
 end
 
--- ===== NpAdmin.can delegates while np_admin runs =====================================================
+-- ===== npAdmin.can delegates while np_admin runs =====================================================
 do
   NA.perms[2] = { ['np_flightradar.admin'] = true }
   ok(Bridge.isAdmin(2) == true, 'np_admin grants admin')
@@ -182,13 +182,13 @@ end
 do
   H.resources.np_admin = 'stopped'
   TriggerEvent('onServerResourceStop', 'np_admin')
-  ok(NpAdmin.can(0, 'np_flightradar.admin') == true, 'fallback: console')
+  ok(npAdmin.can(0, 'np_flightradar.admin') == true, 'fallback: console')
   ok(Bridge.isAdmin(3) == true, 'fallback: identifier in np_admin_fallback')
   ok(Bridge.isAdmin(4) == true, 'fallback: ESX group in np_admin_fallback_groups')
   ok(Bridge.isAdmin(5) == true, 'fallback: Config.Admin.identifiers')
   ok(Bridge.isAdmin(1) == false and Bridge.isAdmin(2) == false, 'fallback: everyone else refused')
   ok(Bridge.can(1, 'np_flightradar.ground') == false, 'fallback: ground node refused for players')
-  ok(NpAdmin.log('np_flightradar', { action = 'x' }) == false, 'log returns false without np_admin')
+  ok(npAdmin.log('np_flightradar', { action = 'x' }) == false, 'log returns false without np_admin')
   ok(B.subs[1] == nil, 'np_admin stopped: node-only ground grant dropped')
 end
 

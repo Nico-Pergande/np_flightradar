@@ -126,7 +126,7 @@ function T.emergency(e, squawk, by)
     player = by,
   })
   -- np_admin log (no-op without np_admin; the Discord log above stays as it is)
-  NpAdmin.log('np_flightradar', {
+  npAdmin.log('np_flightradar', {
     action = 'emergency', actor = by,
     message = L('emergency_log', squawk, L('sq_' .. squawk), cs),
     data = { squawk = squawk, reason = reason, callsign = cs, kind = e.kind, netId = e.netId, coords = info.coords },
