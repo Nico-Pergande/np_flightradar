@@ -13,6 +13,10 @@
 --   npAdmin.log(category, { action=, message=, actor=src, target=src, data={} })  (server)
 --   npAdmin.action({ name=, label=, icon=, perm=, target='player'|'none', args={...}, handler=fn(src, target, args) })  (server)
 --   npAdmin.notifyStaff({ title=, message=, icon=, tint= })                       (server)
+--   npAdmin.theme() -> { brand = '#RRGGBB'|nil, strength = 'accent'|'tiles'|'glass', material = 'frosted'|'liquid' }
+--   npAdmin.onTheme(function(theme) end)          called now and on every change    (server + client)
+--   npAdmin.themeNui = false                      client: don't forward the theme to your NUI yourself (default: on)
+--   npAdmin.sendTheme()                           client: forward it now, e.g. from your NUI's ready callback
 --   npAdmin.fallback = function(src, node) return bool end   -- override the no-np_admin behaviour
 --
 -- Fallback without np_admin (server): console (src 0) is allowed; identifiers listed in the convar
@@ -20,7 +24,7 @@
 -- `np_admin_fallback_groups` (default "admin,superadmin") are allowed. Everyone else is refused.
 npAdmin = npAdmin or {}
 local NA = npAdmin
-NA.LIB_VERSION = 1
+NA.LIB_VERSION = 2
 
 local RES = GetCurrentResourceName()
 local IS_SERVER = IsDuplicityVersion()
@@ -167,6 +171,84 @@ local function schemaOf(def)
     label = def.label or RES, icon = def.icon, tint = def.tint, version = def.version or GetResourceMetadata(RES, 'version', 0),
     description = def.description, categories = def.categories, fields = fields,
   }
+end
+
+-- ---------------------------------------------------------------------------------------------
+-- server theme (Nimbus UI brand / strength / material), set in np_admin: Settings -> np_admin -> Theme
+-- ---------------------------------------------------------------------------------------------
+-- np_admin publishes it as GlobalState.npTheme. Without np_admin the replicated convars np_theme_brand,
+-- np_theme_strength and np_theme_material (`setr`) are used; nothing set = the neutral grey look.
+-- Clients forward it to the resource's NUI as { action = 'theme', type = 'theme', data = theme }, which
+-- nimbus-theme.js picks up on its own. Set npAdmin.themeNui = false to do that yourself via onTheme.
+local THEME_KEY = 'npTheme'
+local STRENGTHS = { accent = true, tiles = true, glass = true }
+local MATERIALS = { frosted = true, liquid = true }
+
+local function normTheme(t)
+  if type(t) ~= 'table' then t = {} end
+  local brand = type(t.brand) == 'string' and t.brand:match('^#?(%x%x%x%x%x%x)$') or nil
+  return {
+    brand = brand and ('#' .. brand:upper()) or nil,
+    strength = STRENGTHS[t.strength] and t.strength or 'accent',
+    material = MATERIALS[t.material] and t.material or 'frosted',
+  }
+end
+NA.normTheme = normTheme
+
+local function readTheme(value)
+  if type(value) ~= 'table' then
+    local conv = GetConvar or function(_, default) return default end
+    value = { brand = conv('np_theme_brand', ''), strength = conv('np_theme_strength', ''),
+              material = conv('np_theme_material', '') }
+  end
+  return normTheme(value)
+end
+
+-- GlobalState / state bag natives are guarded so stubbed test runtimes without them can load the lib
+local theme = readTheme(GlobalState and GlobalState[THEME_KEY])
+local themeListeners = {}
+local HAS_NUI = not IS_SERVER and GetResourceMetadata ~= nil and GetResourceMetadata(RES, 'ui_page', 0) ~= nil
+NA.themeNui = true
+
+function NA.theme()
+  return { brand = theme.brand, strength = theme.strength, material = theme.material }
+end
+
+local function callTheme(fn)
+  local ok, err = pcall(fn, NA.theme())
+  if not ok then print(('^3[%s] np_admin onTheme error: %s^7'):format(RES, tostring(err))) end
+end
+
+function NA.onTheme(fn)
+  if type(fn) ~= 'function' then return end
+  themeListeners[#themeListeners + 1] = fn
+  callTheme(fn)
+end
+
+function NA.sendTheme()
+  if IS_SERVER then return end
+  SendNUIMessage({ action = 'theme', type = 'theme', data = NA.theme() })
+end
+
+if AddStateBagChangeHandler then
+  AddStateBagChangeHandler(THEME_KEY, 'global', function(_, _, value)
+    local nextTheme = readTheme(value)
+    if nextTheme.brand == theme.brand and nextTheme.strength == theme.strength and nextTheme.material == theme.material then return end
+    theme = nextTheme
+    for i = 1, #themeListeners do callTheme(themeListeners[i]) end
+    if HAS_NUI and NA.themeNui then NA.sendTheme() end
+  end)
+end
+
+-- The page may still be loading at start: send a few times (idempotent). Wait(0) first so files loaded
+-- after the lib can still set npAdmin.themeNui = false.
+if HAS_NUI then
+  CreateThread(function()
+    for _, delay in ipairs({ 0, 2000, 8000 }) do
+      Wait(delay)
+      if NA.themeNui then NA.sendTheme() end
+    end
+  end)
 end
 
 if IS_SERVER then
