@@ -216,6 +216,9 @@ AddEventHandler('esx:setJob', function(src) changed(src) end)
 AddEventHandler('esx:playerLoaded', function(src) changed(src) end)
 AddEventHandler('QBCore:Server:OnJobUpdate', function(src) changed(src) end)
 AddEventHandler('QBCore:Server:SetDuty', function(src) changed(src) end)
+-- multi-job resources (np_faction) fire these for any of the player's jobs, not only the framework one
+AddEventHandler('np_faction:jobChanged', function(src) changed(src) end)
+AddEventHandler('np_faction:dutyChanged', function(src) changed(src) end)
 AddEventHandler('QBCore:Server:PlayerLoaded', function(player)
   local src = type(player) == 'table' and player.PlayerData and player.PlayerData.source
   if src then changed(src) end

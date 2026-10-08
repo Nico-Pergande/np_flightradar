@@ -1,5 +1,5 @@
 -- Per-player access: gathers the facts shared/access.lua needs from the server's own view of the world
--- (framework job, item, admin, Discord, seat, station position) and caches the slow part. The cache is
+-- (framework job or every np_faction job, item, admin, Discord, seat, station position) and caches the slow part. The cache is
 -- dropped on job/duty/load events and expires after 30 s; positional facts are always fresh.
 local A = { cache = {}, checks = {} }
 NpFR.Access = A
@@ -24,7 +24,7 @@ local function static(src)
   local info = Bridge.playerInfo(src) or {}
   c = {
     at = now,
-    job = info.job, grade = info.grade or 0, onduty = info.onduty ~= false,
+    job = info.job, grade = info.grade or 0, onduty = info.onduty ~= false, jobs = S.factionJobs(src),
     isAdmin = Bridge.isAdmin(src), groundGrant = Bridge.can(src, Bridge.NODES.ground),
     hasItem = S.hasItem(src), discordOk = S.discordOk(src),
   }
@@ -61,7 +61,7 @@ function A.facts(src)
   ped = ped or GetPlayerPed(src)
   local coords = ped and ped ~= 0 and GetEntityCoords(ped) or nil
   return {
-    inAircraft = veh ~= nil, job = c.job, grade = c.grade, onduty = c.onduty,
+    inAircraft = veh ~= nil, job = c.job, grade = c.grade, onduty = c.onduty, jobs = c.jobs,
     hasItem = c.hasItem, station = A.stationAt(coords), isAdmin = c.isAdmin, groundGrant = c.groundGrant,
     discordOk = c.discordOk, licensed = S.licensed(src),
   }

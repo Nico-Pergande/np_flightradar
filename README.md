@@ -165,6 +165,7 @@ restarts and can be switched off in `Config.Integrations`.
 | np_menu | Radial **Flight radar** entry, and a **Transponder** submenu in aircraft (on/off, 7000/7500/7600/7700, callsign dialog) | Commands and key only |
 | np_manufacturing | Callsigns from the `vehicleCallsign` state bag | perModel / pilot callsign / plate |
 | np_helicam | *Camera active* flag from the `helicam_cam` state bag | No camera flag |
+| np_faction | Multi-job: every job the player holds counts for `Config.Access.jobs`, station and phone job rules, with duty checked per job (`GetJobs`). Access is re-checked on its job / duty events | The framework's single job |
 
 ## API
 
