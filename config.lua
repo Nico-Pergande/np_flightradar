@@ -125,6 +125,7 @@ Config.Commands = { radar = 'radar', squawk = 'squawk', transponder = 'transpond
 Config.Integrations = {
   np_hud = true, np_phone = true, np_inventory = true, np_identification = true,
   np_discord = true, np_menu = true, np_manufacturing = true, np_helicam = true,
+  np_faction = true,
 }
 
 -- Server-side veto hook: return false to deny a mode. function(src, mode) -> bool

@@ -11,6 +11,7 @@ local discord = I.define('np_discord', { fallback = 'no Discord roles / logs' })
 -- state-bag-only readers: no exports, just the bags they write
 local manu = I.define('np_manufacturing', { fallback = 'perModel callsigns / plates' })
 local helicam = I.define('np_helicam', { fallback = 'no camera flag' })
+local faction = I.define('np_faction', { fallback = 'framework job only' })
 
 NpFR.Server = NpFR.Server or {}
 local S = NpFR.Server
@@ -154,6 +155,32 @@ function S.cameraOn(veh)
   local ok, cam = pcall(function() return Entity(veh).state.helicam_cam end)
   return ok and type(cam) == 'table' and cam.on == true
 end
+
+-- ===== np_faction: every job the player holds ======================================================
+
+-- -> { { job, grade, onduty }, ... } | nil (nil = np_faction absent: the framework job decides)
+function S.factionJobs(src)
+  if not faction.active() then return nil end
+  local ok, list = faction.call('GetJobs', src)
+  if not ok or type(list) ~= 'table' then return nil end
+  local out = {}
+  for _, j in ipairs(list) do
+    if type(j) == 'table' and type(j.name) == 'string' then
+      local duty = j.onduty
+      if duty == nil then duty = j.onDuty end
+      out[#out + 1] = { job = j.name, grade = tonumber(j.grade) or 0, onduty = duty ~= false }
+    end
+  end
+  return out
+end
+
+local function refreshAccess()
+  if NpFR.Access then NpFR.Access.invalidateAll() end
+end
+faction.onStart(refreshAccess)
+AddEventHandler('onServerResourceStop', function(res)
+  if res == faction.resource then refreshAccess() end
+end)
 
 -- ===== lifecycle ====================================================================================
 

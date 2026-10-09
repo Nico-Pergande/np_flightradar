@@ -19,6 +19,7 @@ repository 'https://github.com/Nico-Pergande/np_flightradar'
     np_menu            radial entries: flight radar + transponder submenu
     np_manufacturing   vehicle callsigns (state bag vehicleCallsign)
     np_helicam         camera-active flag (state bag helicam_cam)
+    np_faction         multi-job: every job the player holds (duty per job) counts for job rules
     np_admin           permissions (np_flightradar.admin / .ground), settings, logs, staff tools and the
                        server theme (brand / material) for the panel
                        (vendored lib bridge/np_admin.lua, never a hard dependency)

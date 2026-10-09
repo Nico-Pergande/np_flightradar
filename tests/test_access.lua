@@ -129,5 +129,25 @@ do
   ok(Access.resolve({ inAircraft = true }, neg, 'air').range == 0, 'negative range -> 0')
 end
 
+-- ===== multi-job facts (info.jobs, e.g. np_faction): any held job counts, duty per job =================
+do
+  local two = { job = 'mechanic', grade = 0, onduty = true, jobs = {
+    { job = 'mechanic', grade = 0, onduty = true },
+    { job = 'police', grade = 2, onduty = true },
+  } }
+  ok(Access.resolve(two, C, 'ground') ~= nil, 'multi-job: second job grants ground')
+  local offDuty = { job = 'mechanic', jobs = { { job = 'mechanic', grade = 0, onduty = true }, { job = 'police', grade = 2, onduty = false } } }
+  ok(Access.resolve(offDuty, C, 'ground') == nil, 'multi-job: duty checked per job')
+  ok(Access.resolve(offDuty, cfg(function(c) c.Access.requireDuty = false end), 'ground') ~= nil, 'multi-job: duty not required')
+  local graded = cfg(function(c) c.Access.jobs = { police = 3 } end)
+  ok(Access.resolve(two, graded, 'ground') == nil, 'multi-job: grade per job')
+  ok(Access.resolve({ job = 'police', grade = 0, onduty = true, jobs = {} }, C, 'ground') == nil, 'multi-job: an empty list overrides the single job')
+  local atTower = { station = tower, job = 'mechanic', jobs = { { job = 'mechanic', grade = 0, onduty = true }, { job = 'atc', grade = 0, onduty = true } } }
+  ok(Access.resolve(atTower, C, 'station') ~= nil, 'multi-job: station rule')
+  local phoneAtc = cfg(function(c) c.Phone.job = 'atc' end)
+  ok(Access.resolve(atTower, phoneAtc, 'phone') ~= nil, 'multi-job: phone job rule')
+  ok(Access.resolve(two, phoneAtc, 'phone') == nil, 'multi-job: phone job rule not held')
+end
+
 print(('test_access: %d passed, %d failed'):format(passed, failed))
 os.exit(failed == 0 and 0 or 1)

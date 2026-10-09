@@ -4,6 +4,8 @@
 -- info = {
 --   inAircraft = bool,         any seat of a heli/plane (server view)
 --   job = 'police', grade = 0, onduty = bool,
+--   jobs = { { job, grade, onduty }, ... } | nil   every job the player holds (multi-job resources such as
+--                              np_faction); when present, a rule is met by ANY of them, duty checked per job
 --   hasItem = bool,            holds Config.Access.item
 --   station = <Config.Stations entry> | nil   (the station the player stands at)
 --   isAdmin = bool,            np_admin node np_flightradar.admin
@@ -29,8 +31,8 @@ local function range(cfg, mode)
 end
 
 -- jobs = { job = minGrade } (or a list { 'job', ... } = grade 0)
-function Access.jobAllowed(jobs, info, requireDuty)
-  if type(jobs) ~= 'table' or type(info.job) ~= 'string' then return false end
+local function oneJobAllowed(jobs, info, requireDuty)
+  if type(info) ~= 'table' or type(info.job) ~= 'string' then return false end
   local min = jobs[info.job]
   if min == nil then
     for _, j in ipairs(jobs) do
@@ -44,14 +46,35 @@ function Access.jobAllowed(jobs, info, requireDuty)
   return true
 end
 
-local function phoneJobOk(job, info)
-  if job == nil then return true end
+-- info.jobs (multi-job) when present, otherwise the single info.job
+local function anyJob(info, test)
+  if type(info.jobs) == 'table' then
+    for _, j in ipairs(info.jobs) do
+      if test(j) then return true end
+    end
+    return false
+  end
+  return test(info)
+end
+
+function Access.jobAllowed(jobs, info, requireDuty)
+  if type(jobs) ~= 'table' then return false end
+  return anyJob(info, function(j) return oneJobAllowed(jobs, j, requireDuty) end)
+end
+
+local function onePhoneJobOk(job, info)
+  if type(info) ~= 'table' then return false end
   if type(job) == 'string' then return info.job == job end
   if type(job) == 'table' then
     for _, j in ipairs(job) do if j == info.job then return true end end
     return job[info.job] ~= nil and job[info.job] ~= false
   end
   return false
+end
+
+local function phoneJobOk(job, info)
+  if job == nil then return true end
+  return anyJob(info, function(j) return onePhoneJobOk(job, j) end)
 end
 
 -- Is `mode` granted on its own merits (ignores admin + veto)?
