@@ -74,3 +74,16 @@ files {
   'html/vendor/**/*',
   'html/fonts/**/*',
 }
+
+-- Keep supported customization surfaces editable in Asset Escrow packages.
+escrow_ignore {
+  'bridge/*.lua',
+  'config.lua',
+  'integrations/*.lua',
+  'locales/*.lua',
+}
+
+-- Lua locale dictionaries/helpers are also supported editable translation surfaces.
+escrow_ignore {
+  'shared/locale.lua',
+}
